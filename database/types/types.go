@@ -26,4 +26,6 @@ type App struct {
 type AllowedOrigins struct {
 	gorm.Model
 	Origin string `json:"url"`
+	AppID  string `json:"appId"`
+	App    App
 }

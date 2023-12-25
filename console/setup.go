@@ -10,6 +10,7 @@ func setupAppsEndpoints(router *echo.Group) {
 	router.GET("/", handlers.ListAppsHandler)
 	router.POST("/", handlers.CreateAppHandler)
 	router.DELETE("/:appId", handlers.DeleteAppHandler)
+	router.POST("/:appId/origin", handlers.AddOriginHandler)
 }
 
 func setupUsersEndpoints(router *echo.Group) {

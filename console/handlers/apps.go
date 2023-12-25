@@ -39,3 +39,23 @@ func DeleteAppHandler(ctx echo.Context) error {
 	}
 	return ctx.NoContent(http.StatusNoContent)
 }
+
+func AddOriginHandler(ctx echo.Context) error {
+	appID := ctx.Param("appId")
+	if appID == "" {
+		return ctx.JSON(http.StatusBadRequest, "invalid app ID")
+	}
+	dto := struct {
+		Origin string `json:"origin"`
+	}{}
+
+	if err := ctx.Bind(&dto); err != nil {
+		return ctx.JSON(http.StatusBadRequest, err)
+	}
+
+	if err := db.Create(&types.AllowedOrigins{Origin: dto.Origin, AppID: appID}).Error; err != nil {
+		return ctx.JSON(http.StatusInternalServerError, err)
+	}
+
+	return ctx.NoContent(http.StatusCreated)
+}

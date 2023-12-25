@@ -1,4 +1,4 @@
-package jwt
+package session
 
 import (
 	"github.com/dgrijalva/jwt-go"

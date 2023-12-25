@@ -3,7 +3,11 @@ import axios from "axios";
 
 export async function getUsers(appId: string): Promise<User[]> {
   try {
-    const res = await axios.get(`/apps/${appId}/users/`)
+    const res = await axios.get(`/apps/${appId}/users/`, {
+      headers: {
+        "X-App-ID": appId
+      },
+    })
     return res.data
   } catch (e) {
     return []

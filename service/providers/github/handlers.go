@@ -3,8 +3,8 @@ package github
 import (
 	"auth-service/database"
 	"auth-service/database/types"
-	"auth-service/service/jwt"
 	"auth-service/service/providers"
+	"auth-service/service/session"
 	"encoding/json"
 	"errors"
 	"github.com/labstack/echo/v4"
@@ -103,10 +103,10 @@ func CallbackHandler(ctx echo.Context) error {
 		return ctx.JSON(http.StatusInternalServerError, err)
 
 	}
-	jwtCookie, err := jwt.GenerateJWT(jwt.Config{
-		SigningKey: jwt.SecretKey,
+	jwtCookie, err := session.GenerateJWT(session.Config{
+		SigningKey: session.SecretKey,
 		Expiration: 24 * time.Hour,
-		Payload: jwt.Payload{
+		Payload: session.Payload{
 			AppID:  appID,
 			UserID: user.ID,
 		},
@@ -116,7 +116,7 @@ func CallbackHandler(ctx echo.Context) error {
 
 	}
 	ctx.SetCookie(&http.Cookie{
-		Name:     jwt.CookieName,
+		Name:     session.CookieName,
 		Value:    jwtCookie,
 		Path:     "/",
 		HttpOnly: true,

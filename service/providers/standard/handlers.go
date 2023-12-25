@@ -3,7 +3,7 @@ package standard
 import (
 	"auth-service/database"
 	"auth-service/database/types"
-	mjwt "auth-service/service/jwt"
+	mjwt "auth-service/service/session"
 	"crypto/sha256"
 	"encoding/base64"
 	"github.com/dgrijalva/jwt-go"
