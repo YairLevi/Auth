@@ -19,13 +19,13 @@ type User struct {
 
 type App struct {
 	Model
-	Name  string `json:"name"`
-	Users []User `json:"users"`
+	Name    string           `json:"name"`
+	Users   []User           `json:"users"`
+	Origins []AllowedOrigins `json:"allowedOrigins"`
 }
 
 type AllowedOrigins struct {
 	gorm.Model
-	Origin string `json:"url"`
-	AppID  string `json:"appId"`
-	App    App
+	URL   string `json:"url"`
+	AppID string `json:"appId"`
 }

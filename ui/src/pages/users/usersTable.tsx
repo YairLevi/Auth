@@ -1,5 +1,3 @@
-"use client"
-
 import * as React from "react"
 import {
   ColumnDef,
@@ -28,7 +26,9 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from "@/components/ui/table"
 import { type User } from '@/api/types'
 import { deleteUser } from "@/api/users";
-import { useUsers } from "@/pages/users";
+import { useUsers } from "@/pages/users/index";
+import { useSearchParams } from "react-router-dom"
+import { useEffect } from "react";
 
 
 export const columns: ColumnDef<User>[] = [
@@ -146,6 +146,15 @@ type UserTableProps = {
 }
 
 export function UserTable({ appId }: UserTableProps) {
+  const [searchParams, setSearchParams] = useSearchParams()
+  useEffect(() => {
+    setSearchParams({
+      email: "",
+      firstName: "",
+      lastName: "",
+      createdAt: "",
+    })
+  }, []);
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -198,10 +207,19 @@ export function UserTable({ appId }: UserTableProps) {
                   <DropdownMenuCheckboxItem
                     key={column.id}
                     className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
+                    checked={searchParams.has(column.id)}
+                    onCheckedChange={(value) => {
                       column.toggleVisibility(!!value)
-                    }
+                      setSearchParams(prev => {
+                        const newParams = prev
+                        if (!value) {
+                          newParams.delete(column.id)
+                        } else {
+                          newParams.set(column.id, "")
+                        }
+                        return newParams
+                      })
+                    }}
                   >
                     {column.id}
                   </DropdownMenuCheckboxItem>
@@ -215,7 +233,9 @@ export function UserTable({ appId }: UserTableProps) {
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow className="hover:bg-background" key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
+                {headerGroup.headers
+                  .filter(header => searchParams.has(header.id) || header.id == "select")
+                  .map((header) => {
                   return (
                     <TableHead key={header.id}>
                       {header.isPlaceholder
@@ -237,7 +257,9 @@ export function UserTable({ appId }: UserTableProps) {
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                 >
-                  {row.getVisibleCells().map((cell) => (
+                  {row.getVisibleCells()
+                    .filter(cell => searchParams.has(cell.column.id) || cell.column.id == "select")
+                    .map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,

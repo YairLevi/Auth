@@ -27,16 +27,3 @@ export async function deleteApp(appId: string) {
     return false
   }
 }
-
-export async function addOriginToApp(origin: string, appId: string) {
-  let originToAdd = origin
-  if (origin.endsWith("/")) {
-    originToAdd = originToAdd.slice(0, -1)
-  }
-
-  try {
-    const res = await axios.post(`/apps/${appId}/origin`, { origin: originToAdd })
-  } catch (e) {
-
-  }
-}

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { UserTable } from "@/pages/app/usersTable";
+import { UserTable } from "@/pages/users/usersTable";
 import { useState } from "react";
 import { useParams } from "react-router";
 import { AddUserDialog } from "@/pages/users/dialogs/addUserDialog";
