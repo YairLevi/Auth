@@ -3,7 +3,7 @@ package standard
 import (
 	"auth-service/database"
 	"auth-service/database/types"
-	mjwt "auth-service/service/session"
+	"auth-service/service/session"
 	"crypto/sha256"
 	"encoding/base64"
 	"github.com/dgrijalva/jwt-go"
@@ -62,10 +62,10 @@ func EmailPasswordLoginHandler(ctx echo.Context) error {
 	if hashedPasswordEncodedString != user.PasswordHash {
 		return ctx.JSON(http.StatusUnauthorized, "unauthorized")
 	}
-	jwtCookie, err := mjwt.GenerateJWT(mjwt.Config{
+	jwtCookie, err := session.GenerateJWT(session.Config{
 		Expiration: time.Hour * 24,
-		SigningKey: mjwt.SecretKey,
-		Payload: mjwt.Payload{
+		SigningKey: session.SecretKey,
+		Payload: session.Payload{
 			AppID:  loginDTO.AppID,
 			UserID: user.ID,
 		},
@@ -75,7 +75,7 @@ func EmailPasswordLoginHandler(ctx echo.Context) error {
 	}
 
 	ctx.SetCookie(&http.Cookie{
-		Name:     mjwt.CookieName,
+		Name:     session.CookieName,
 		Value:    jwtCookie,
 		Expires:  time.Now().Add(time.Hour * 24),
 		HttpOnly: true,
@@ -86,13 +86,13 @@ func EmailPasswordLoginHandler(ctx echo.Context) error {
 }
 
 func CookieLoginHandler(ctx echo.Context) error {
-	jwtCookie, err := ctx.Cookie(mjwt.CookieName)
+	jwtCookie, err := ctx.Cookie(session.CookieName)
 	if err != nil {
 		return ctx.JSON(http.StatusUnauthorized, err)
 	}
 
 	token, err := jwt.Parse(jwtCookie.Value, func(token *jwt.Token) (interface{}, error) {
-		return []byte(mjwt.SecretKey), nil
+		return []byte(session.SecretKey), nil
 	})
 
 	if err != nil || !token.Valid {
@@ -131,7 +131,7 @@ func LogoutHandler(ctx echo.Context) error {
 
 	ctx.SetCookie(&http.Cookie{
 		Path:   "/",
-		Name:   mjwt.CookieName,
+		Name:   session.CookieName,
 		MaxAge: 0,
 	})
 	return ctx.NoContent(http.StatusOK)

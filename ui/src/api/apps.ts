@@ -1,5 +1,5 @@
 import axios from "axios";
-import { App } from "@/api/types";
+import { App, SecuritySettings } from "@/api/types";
 
 export async function getApps(): Promise<App[]> {
   try {
@@ -7,6 +7,15 @@ export async function getApps(): Promise<App[]> {
     return res.data
   } catch (e) {
     return []
+  }
+}
+
+export async function getApp(appId: string): Promise<App> {
+  try {
+    const res = await axios.get(`/apps/${appId}`)
+    return res.data
+  } catch (e) {
+    return null
   }
 }
 

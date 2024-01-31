@@ -3,18 +3,28 @@ package console
 import (
 	"auth-service/console/handlers"
 	"auth-service/console/handlers/providers"
+	"auth-service/database"
+	"auth-service/database/types"
+	"fmt"
 	"github.com/labstack/echo/v4"
+	"net/http"
 )
+
+var db = database.DB
 
 func setupAppsEndpoints(router *echo.Group) {
 	router.GET("/", handlers.ListAppsHandler)
 	router.POST("/", handlers.CreateAppHandler)
+	router.GET("/:appId", handlers.GetAppHandler)
 	router.DELETE("/:appId", handlers.DeleteAppHandler)
 }
 
-func setupOriginsEndpoints(router *echo.Group) {
-	router.GET("/", handlers.GetOriginsHandler)
-	router.POST("/", handlers.AddOriginHandler)
+func setupSecurityEndpoints(router *echo.Group) {
+	router.GET("/", handlers.GetSecuritySettingsHandler)
+	router.POST("/lockout/threshold", handlers.SetLockoutThresholdHandler)
+	router.POST("/lockout/duration", handlers.SetLockoutDurationHandler)
+	router.POST("/origins", handlers.AddOriginHandler)
+	router.POST("/session", handlers.SetSessionKeyHandler)
 }
 
 func setupUsersEndpoints(router *echo.Group) {
@@ -30,9 +40,24 @@ func setupOAuthEndpoints(router *echo.Group) {
 	router.DELETE("/:provider/disable", providers.DisableProviderHandler)
 }
 
+func SetupSingleAppEndpoints(router *echo.Group) {
+	router.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(ctx echo.Context) error {
+			appID := ctx.Param("appId")
+			if err := db.Where("id = ?", appID).First(&types.App{}).Error; err != nil {
+				fmt.Println(err)
+				return ctx.JSON(http.StatusBadRequest, "invalid app ID")
+			}
+			return next(ctx)
+		}
+	})
+
+	setupUsersEndpoints(router.Group("/users"))
+	setupOAuthEndpoints(router.Group("/oauth"))
+	setupSecurityEndpoints(router.Group("/security"))
+}
+
 func SetupEndpoints(server *echo.Echo) {
 	setupAppsEndpoints(server.Group("/apps"))
-	setupUsersEndpoints(server.Group("/apps/:appId/users"))
-	setupOAuthEndpoints(server.Group("/apps/:appId/oauth"))
-	setupOriginsEndpoints(server.Group("/apps/:appId/origins"))
+	SetupSingleAppEndpoints(server.Group("/apps/:appId"))
 }

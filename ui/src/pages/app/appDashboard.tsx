@@ -3,15 +3,47 @@ import { Users, UsersProvider } from "@/pages/users";
 import { SocialConnections } from "@/pages/social";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { DoorOpen, KeyRound, LockIcon, LucideIcon, SettingsIcon, SquareAsteriskIcon, UsersIcon } from "lucide-react";
-import { Settings } from "@/pages/settings";
+import { DoorOpen, KeyRound, LockIcon, LucideIcon, UsersIcon } from "lucide-react";
 import { Security } from "@/pages/security";
+import { ReactNode } from "react";
 
 type SidebarItemProps = {
   text: string
   path: string
   Icon?: LucideIcon
 }
+
+type Route = {
+  name: string
+  icon: LucideIcon,
+  path: string,
+  element: ReactNode
+}
+
+const routes: Route[] = [
+  {
+    name: "Users",
+    icon: UsersIcon,
+    path: "users",
+    element: <>
+      <UsersProvider>
+        <Users/>
+      </UsersProvider>
+    </>
+  },
+  {
+    name: "Social Connections",
+    icon: KeyRound,
+    path: "social",
+    element: <SocialConnections/>
+  },
+  {
+    name: "Security",
+    icon: LockIcon,
+    path: "security",
+    element: <Security/>
+  },
+]
 
 function SidebarItem({ text, path, Icon }: SidebarItemProps) {
   const match = useMatch('/apps/:appId/:lastPart')
@@ -35,10 +67,11 @@ export function Sidebar() {
 
   return (
     <div className="h-full min-w-[15rem] max-w-[15rem] w-full border-r mr-24 flex flex-col px-4 gap-1">
-      <SidebarItem text="Users" path="users" Icon={UsersIcon}/>
-      <SidebarItem text="Social Connections" path="social" Icon={KeyRound}/>
-      <SidebarItem text="Settings" path="settings" Icon={SettingsIcon}/>
-      <SidebarItem text="Security" path="security" Icon={LockIcon}/>
+      {
+        routes.map(r => (
+          <SidebarItem key={`sidebar-item${r.path}`} text={r.name} path={r.path} Icon={r.icon}/>
+        ))
+      }
       <Button
         onClick={() => navigate("/apps")}
         className="flex gap-3 justify-start mt-auto"
@@ -56,14 +89,11 @@ export function AppDashboard() {
       <Sidebar/>
       <div className="w-full overflow-auto">
         <Routes>
-          <Route path="/users" element={
-            <UsersProvider>
-              <Users/>
-            </UsersProvider>
-          }/>
-          <Route path="/settings" element={<Settings/>}/>
-          <Route path="/social" element={<SocialConnections/>}/>
-          <Route path="/security" element={<Security/>}/>
+          {
+            routes.map(r => (
+              <Route key={`route${r}`} path={`/${r.path}`} element={r.element}/>
+            ))
+          }
         </Routes>
       </div>
     </div>

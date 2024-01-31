@@ -16,7 +16,7 @@ func DynamicCORS(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		origin := c.Request().Header.Get("Origin")
 		appID := c.Request().Header.Get(ApplicationHeader)
-		var allowed types.AllowedOrigins
+		var allowed types.Origin
 		err := database.DB.Where("origin = ? AND app_id = ?", origin, appID).First(&allowed).Error
 		isOriginAllowed := err == nil
 

@@ -20,9 +20,9 @@ func init() {
 
 	err = db.AutoMigrate(
 		&types.User{},
+		&types.Origin{},
 		&types.App{},
 		&types.OAuthProvider{},
-		&types.AllowedOrigins{},
 	)
 	if err != nil {
 		panic(fmt.Sprint("GORM failed to migrate types to proper SQL tables."))

@@ -1,7 +1,6 @@
 package types
 
 import (
-	"gorm.io/gorm"
 	"time"
 )
 
@@ -19,13 +18,16 @@ type User struct {
 
 type App struct {
 	Model
-	Name    string           `json:"name"`
-	Users   []User           `json:"users"`
-	Origins []AllowedOrigins `json:"allowedOrigins"`
+	Name             string   `json:"name"`
+	Users            []User   `json:"users"`
+	Origins          []Origin `json:"allowedOrigins"`
+	LockoutThreshold int      `json:"lockoutThreshold" gorm:"default:5"`
+	LockoutDuration  int      `json:"lockoutDuration" gorm:"default:30"`
+	SessionKey       string   `json:"sessionKey" gorm:"default:'session key'"`
 }
 
-type AllowedOrigins struct {
-	gorm.Model
+type Origin struct {
+	Model
+	AppID string `json:"-"`
 	URL   string `json:"url"`
-	AppID string `json:"appId"`
 }

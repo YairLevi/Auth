@@ -1,5 +1,5 @@
 import { Switch } from "@/components/ui/switch";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { providerIcons } from "@/pages/social/providerIcons";
 import { AlertCircle, ExternalLink, SlidersHorizontal } from "lucide-react";
 import {
@@ -21,6 +21,7 @@ export function SocialConnections() {
   const [selectedProvider, setSelectedProvider] = useState("")
   const [clientID, setClientID] = useState("")
   const [clientSecret, setClientSecret] = useState("")
+
 
   function openProviderCredentials(provider: string) {
     setSelectedProvider(provider)
@@ -48,7 +49,7 @@ export function SocialConnections() {
       </p>
       <div className="[&:not(:last-child)]:border-b">
         {
-          Object.keys(oauthState).map(provider => {
+          Object.keys(oauthState).sort().map(provider => {
             const emptyCredentials = oauthState[provider].clientID == "" || oauthState[provider].clientSecret == ""
 
             return (

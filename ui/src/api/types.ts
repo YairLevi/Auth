@@ -1,5 +1,5 @@
 export type Model = {
-  id: number
+  id: string
   createdAt: Date
   updatedAt: Date
   deletedAt: Date
@@ -7,6 +7,7 @@ export type Model = {
 
 export type App = Model & {
   name: string
+  allowedOrigins: []
 }
 
 export type User = Model & {
@@ -25,4 +26,10 @@ export type SocialState = {
     clientID: string
     clientSecret: string
   }
+}
+
+export type SecuritySettings = {
+  lockoutThreshold: number
+  lockoutDuration: number
+  allowedOrigins: (Model & { url: string })[]
 }
