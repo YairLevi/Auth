@@ -17,8 +17,8 @@ func SetLockoutThresholdHandler(ctx echo.Context) error {
 	}
 
 	var app types.App
-	db.First(&app, appID)
-
+	app.ID = appID
+	db.First(&app)
 	app.LockoutThreshold = dto.Threshold
 	if err := db.Save(&app).Error; err != nil {
 		return ctx.JSON(http.StatusInternalServerError, "Error saving new lockout threshold")
@@ -37,7 +37,8 @@ func SetLockoutDurationHandler(ctx echo.Context) error {
 	}
 
 	var app types.App
-	db.First(&app, appID)
+	app.ID = appID
+	db.First(&app)
 
 	app.LockoutDuration = dto.Duration
 	if err := db.Save(&app).Error; err != nil {
@@ -57,7 +58,8 @@ func SetSessionKeyHandler(ctx echo.Context) error {
 	}
 
 	var app types.App
-	db.First(&app, appID)
+	app.ID = appID
+	db.First(&app)
 
 	app.SessionKey = dto.Key
 	if err := db.Save(&app).Error; err != nil {
