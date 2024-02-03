@@ -19,11 +19,12 @@ export function AuthProvider({ children, serviceURL, appId }: PropsWithChildren 
   const isSignedIn = !!user
   const endpoints = setupAxiosAndGetEndpoints(serviceURL, appId)
 
+  axios.defaults.headers["X-App-ID"] = appId
+
   useEffect(() => {
     (function () {
       axios.get(endpoints.loginCookie, {
         withCredentials: true,
-        data: { appId }
       })
         .then(res => setUser(res.data))
         .catch(err => console.log(err))
