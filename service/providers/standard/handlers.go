@@ -1,18 +1,16 @@
 package standard
 
 import (
-	"auth-service/database"
 	"auth-service/database/types"
 	"auth-service/service/session"
 	"crypto/sha256"
 	"encoding/base64"
+	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"time"
 )
-
-var db = database.DB
 
 func RegisterHandler(ctx echo.Context) error {
 	registerDTO := struct {
@@ -50,9 +48,25 @@ func EmailPasswordLoginHandler(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, err)
 	}
 
+	appGuard := lockoutManager.AppGuards[loginDTO.AppID]
+	if appGuard != nil {
+		if appGuard.IsLocked(loginDTO.Email) {
+			return ctx.JSON(
+				http.StatusUnauthorized,
+				fmt.Sprintf(
+					"this email is in lockout state. it will be released in %d seconds.",
+					appGuard.Duration.Seconds(),
+				),
+			)
+		}
+	} else {
+		fmt.Println("lockout guard is nil")
+	}
+
 	var user types.User
 	res := db.Where("email = ? AND app_id = ?", loginDTO.Email, loginDTO.AppID).First(&user)
 	if res.Error != nil {
+		appGuard.Fail(loginDTO.Email)
 		return ctx.JSON(http.StatusUnauthorized, "unauthorized")
 	}
 
@@ -60,6 +74,7 @@ func EmailPasswordLoginHandler(ctx echo.Context) error {
 	hashedPasswordEncodedString := base64.StdEncoding.EncodeToString(hashedPasswordInBytes[:])
 
 	if hashedPasswordEncodedString != user.PasswordHash {
+		appGuard.Fail(loginDTO.Email)
 		return ctx.JSON(http.StatusUnauthorized, "unauthorized")
 	}
 	jwtCookie, err := session.GenerateJWT(session.Config{
