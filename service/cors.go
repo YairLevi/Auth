@@ -1,8 +1,8 @@
 package service
 
 import (
-	"auth-service/database"
-	"auth-service/database/types"
+	"auth/database"
+	"auth/database/types"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"net/http"

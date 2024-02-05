@@ -1,8 +1,8 @@
 package providers
 
 import (
-	"auth-service/database"
-	"auth-service/database/types"
+	"auth/database"
+	"auth/database/types"
 )
 
 const (

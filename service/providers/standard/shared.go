@@ -1,6 +1,6 @@
 package standard
 
-import "auth-service/database"
+import "auth/database"
 
 var (
 	db             = database.DB

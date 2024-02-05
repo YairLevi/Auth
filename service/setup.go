@@ -1,9 +1,10 @@
 package service
 
 import (
-	"auth-service/service/providers/github"
-	"auth-service/service/providers/google"
-	"auth-service/service/providers/standard"
+	"auth/service/middleware"
+	"auth/service/providers/github"
+	"auth/service/providers/google"
+	"auth/service/providers/standard"
 	"github.com/labstack/echo/v4"
 )
 
@@ -25,6 +26,7 @@ func setupGithubAuthRoutes(router *echo.Group) {
 }
 
 func SetupEndpoints(server *echo.Echo) {
+	server.Use(middleware.AppID)
 	setupServiceApiEndpoints(server.Group("/api"))
 	setupGoogleAuthRoutes(server.Group("/api/google"))
 	setupGithubAuthRoutes(server.Group("/api/github"))

@@ -1,7 +1,7 @@
 package standard
 
 import (
-	"auth-service/database/types"
+	"auth/database/types"
 	"encoding/base64"
 	"fmt"
 	"github.com/labstack/gommon/log"

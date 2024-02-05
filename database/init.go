@@ -1,7 +1,7 @@
 package database
 
 import (
-	"auth-service/database/types"
+	"auth/database/types"
 	"fmt"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"

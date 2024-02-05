@@ -1,8 +1,9 @@
 package standard
 
 import (
-	"auth-service/database/types"
-	"auth-service/service/session"
+	"auth/database/types"
+	"auth/service/auth"
+	"auth/service/session"
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
@@ -101,6 +102,8 @@ func EmailPasswordLoginHandler(ctx echo.Context) error {
 }
 
 func CookieLoginHandler(ctx echo.Context) error {
+	fmt.Println(ctx)
+	fmt.Println(ctx.(auth.Context).AppID)
 	jwtCookie, err := ctx.Cookie(session.CookieName)
 	if err != nil {
 		return ctx.JSON(http.StatusUnauthorized, err)

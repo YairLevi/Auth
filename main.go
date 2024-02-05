@@ -1,8 +1,8 @@
 package main
 
 import (
-	"auth-service/console"
-	"auth-service/service"
+	"auth/console"
+	"auth/service"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"log"

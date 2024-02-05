@@ -1,10 +1,10 @@
 package github
 
 import (
-	"auth-service/database"
-	"auth-service/database/types"
-	"auth-service/service/providers"
-	"auth-service/service/session"
+	"auth/database"
+	"auth/database/types"
+	"auth/service/providers"
+	"auth/service/session"
 	"encoding/json"
 	"errors"
 	"github.com/labstack/echo/v4"

@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"auth-service/database/types"
+	"auth/database/types"
 	"crypto/sha256"
 	"encoding/base64"
 	"github.com/labstack/echo/v4"

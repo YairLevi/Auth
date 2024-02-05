@@ -1,10 +1,10 @@
 package console
 
 import (
-	"auth-service/console/handlers"
-	"auth-service/console/handlers/providers"
-	"auth-service/database"
-	"auth-service/database/types"
+	"auth/console/handlers"
+	"auth/console/handlers/providers"
+	"auth/database"
+	"auth/database/types"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"net/http"
