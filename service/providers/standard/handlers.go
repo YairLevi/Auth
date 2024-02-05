@@ -43,21 +43,24 @@ func EmailPasswordLoginHandler(ctx echo.Context) error {
 		Password string `json:"password"`
 		AppID    string `json:"appId"`
 	}{}
-	appID := loginDTO.AppID
 
 	if err := ctx.Bind(&loginDTO); err != nil {
 		return ctx.JSON(http.StatusBadRequest, err)
 	}
 
-	appGuard := lockoutManager.AppGuards[appID]
-	if appGuard.IsLocked(loginDTO.Email) {
-		return ctx.JSON(
-			http.StatusUnauthorized,
-			fmt.Sprintf(
-				"this email is in lockout state. it will be released in %d seconds.",
-				appGuard.Duration.Seconds(),
-			),
-		)
+	appGuard := lockoutManager.AppGuards[loginDTO.AppID]
+	if appGuard != nil {
+		if appGuard.IsLocked(loginDTO.Email) {
+			return ctx.JSON(
+				http.StatusUnauthorized,
+				fmt.Sprintf(
+					"this email is in lockout state. it will be released in %d seconds.",
+					appGuard.Duration.Seconds(),
+				),
+			)
+		}
+	} else {
+		fmt.Println("lockout guard is nil")
 	}
 
 	var user types.User

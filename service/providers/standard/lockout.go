@@ -77,6 +77,7 @@ func (g *AppLockout) Fail(email string) {
 	source, exists := g.Status[key]
 	if !exists {
 		g.create(key)
+		source = g.Status[key]
 	}
 	source.Attempts += 1
 	if source.Attempts == g.Threshold {
