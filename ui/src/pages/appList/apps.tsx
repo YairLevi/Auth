@@ -14,7 +14,7 @@ import { useApps } from "@/pages/appList/queries";
 import { useNavigate } from "react-router";
 
 type AppCardProps = {
-  id: number
+  id: string
   name: string
   createdAt: Date
 }
