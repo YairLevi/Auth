@@ -1,7 +1,7 @@
 package database
 
 import (
-	"auth/database/types"
+	types2 "auth/service/database/types"
 	"fmt"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -19,10 +19,10 @@ func init() {
 	}
 
 	err = db.AutoMigrate(
-		&types.User{},
-		&types.Origin{},
-		&types.App{},
-		&types.OAuthProvider{},
+		&types2.User{},
+		&types2.Origin{},
+		&types2.App{},
+		&types2.OAuthProvider{},
 	)
 	if err != nil {
 		panic(fmt.Sprint("GORM failed to migrate types to proper SQL tables."))

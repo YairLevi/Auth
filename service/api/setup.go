@@ -1,9 +1,9 @@
-package service
+package api
 
 import (
-	"auth/service/providers/github"
-	"auth/service/providers/google"
-	"auth/service/providers/standard"
+	"auth/service/api/providers/github"
+	"auth/service/api/providers/google"
+	"auth/service/api/providers/standard"
 	"github.com/labstack/echo/v4"
 )
 

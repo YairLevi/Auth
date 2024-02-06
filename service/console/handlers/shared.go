@@ -1,5 +1,7 @@
 package handlers
 
-import "auth/database"
+import (
+	"auth/service/database"
+)
 
 var db = database.DB

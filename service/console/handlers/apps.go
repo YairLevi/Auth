@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"auth/database/types"
+	"auth/service/database/types"
 	"auth/service/middleware"
 	"fmt"
 	"github.com/labstack/echo/v4"

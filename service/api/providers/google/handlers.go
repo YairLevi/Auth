@@ -1,10 +1,10 @@
 package google
 
 import (
-	"auth/database"
-	"auth/database/types"
+	"auth/service/api/providers"
+	"auth/service/database"
+	"auth/service/database/types"
 	auth "auth/service/middleware"
-	"auth/service/providers"
 	"auth/service/session"
 	"encoding/json"
 	"errors"

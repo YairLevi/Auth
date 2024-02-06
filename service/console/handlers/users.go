@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"auth/database/types"
+	"auth/service/database/types"
 	auth "auth/service/middleware"
 	"crypto/sha256"
 	"encoding/base64"

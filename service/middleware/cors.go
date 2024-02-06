@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"auth/database"
-	"auth/database/types"
+	"auth/service/database"
+	"auth/service/database/types"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"net/http"

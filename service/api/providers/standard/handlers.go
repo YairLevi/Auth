@@ -1,7 +1,7 @@
 package standard
 
 import (
-	"auth/database/types"
+	"auth/service/database/types"
 	auth "auth/service/middleware"
 	"auth/service/session"
 	"crypto/sha256"

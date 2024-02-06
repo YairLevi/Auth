@@ -1,8 +1,8 @@
 package main
 
 import (
-	"auth/console"
-	"auth/service"
+	"auth/service/api"
+	"auth/service/console"
 	mw "auth/service/middleware"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -20,7 +20,7 @@ func main() {
 	server.Use(mw.DynamicCORS)
 
 	console.SetupEndpoints(server)
-	service.SetupEndpoints(server)
+	api.SetupEndpoints(server)
 
 	// HealthChecker Endpoint
 	server.GET("/test", func(ctx echo.Context) error {
