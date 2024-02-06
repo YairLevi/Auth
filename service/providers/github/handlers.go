@@ -3,6 +3,7 @@ package github
 import (
 	"auth/database"
 	"auth/database/types"
+	auth "auth/service/middleware"
 	"auth/service/providers"
 	"auth/service/session"
 	"encoding/json"
@@ -16,7 +17,7 @@ import (
 var db = database.DB
 
 func LoginHandler(ctx echo.Context) error {
-	appID := ctx.Param("appId")
+	appID := ctx.(auth.Context).AppID
 	githubOauthConfig, err := providers.GetConfigByAppID(appID, providers.Github)
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, "invalid app ID")

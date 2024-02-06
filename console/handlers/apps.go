@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"auth/database/types"
+	"auth/service/middleware"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -28,10 +29,7 @@ func ListAppsHandler(ctx echo.Context) error {
 }
 
 func GetAppHandler(ctx echo.Context) error {
-	appID := ctx.Param("appId")
-	if appID == "" {
-		return ctx.JSON(http.StatusBadRequest, "invalid app ID")
-	}
+	appID := ctx.(middleware.Context).AppID
 
 	var app types.App
 	app.ID = appID
@@ -44,10 +42,7 @@ func GetAppHandler(ctx echo.Context) error {
 }
 
 func GetSecuritySettingsHandler(ctx echo.Context) error {
-	appID := ctx.Param("appId")
-	if appID == "" {
-		return ctx.JSON(http.StatusBadRequest, "invalid app ID")
-	}
+	appID := ctx.(middleware.Context).AppID
 
 	dto := struct {
 		Origins          []types.Origin `json:"allowedOrigins"`
@@ -86,7 +81,7 @@ func CreateAppHandler(ctx echo.Context) error {
 }
 
 func DeleteAppHandler(ctx echo.Context) error {
-	appID := ctx.Param("appId")
+	appID := ctx.(middleware.Context).AppID
 	err := db.Delete(&types.App{}, appID).Error
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, err)

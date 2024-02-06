@@ -2,12 +2,13 @@ package handlers
 
 import (
 	"auth/database/types"
+	auth "auth/service/middleware"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
 
 func SetLockoutThresholdHandler(ctx echo.Context) error {
-	appID := ctx.Param("appId")
+	appID := ctx.(auth.Context).AppID
 	dto := struct {
 		Threshold int `json:"threshold"`
 	}{}
@@ -27,7 +28,7 @@ func SetLockoutThresholdHandler(ctx echo.Context) error {
 }
 
 func SetLockoutDurationHandler(ctx echo.Context) error {
-	appID := ctx.Param("appId")
+	appID := ctx.(auth.Context).AppID
 	dto := struct {
 		Duration int `json:"duration"`
 	}{}
@@ -48,7 +49,7 @@ func SetLockoutDurationHandler(ctx echo.Context) error {
 }
 
 func SetSessionKeyHandler(ctx echo.Context) error {
-	appID := ctx.Param("appId")
+	appID := ctx.(auth.Context).AppID
 	dto := struct {
 		Key string `json:"key"`
 	}{}
@@ -69,7 +70,7 @@ func SetSessionKeyHandler(ctx echo.Context) error {
 }
 
 func AddOriginHandler(ctx echo.Context) error {
-	appID := ctx.Param("appId")
+	appID := ctx.(auth.Context).AppID
 	dto := struct {
 		Origin string `json:"origin"`
 	}{}
