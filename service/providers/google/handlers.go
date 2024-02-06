@@ -3,6 +3,7 @@ package google
 import (
 	"auth/database"
 	"auth/database/types"
+	auth "auth/service/middleware"
 	"auth/service/providers"
 	"auth/service/session"
 	"encoding/json"
@@ -18,7 +19,7 @@ import (
 var db = database.DB
 
 func LoginHandler(ctx echo.Context) error {
-	appID := ctx.Param("appId")
+	appID := ctx.(auth.Context).AppID
 	googleOauthConfig, err := providers.GetConfigByAppID(appID, providers.Google)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, err)
@@ -94,7 +95,6 @@ func CallbackHandler(ctx echo.Context) error {
 	ctx.SetCookie(&http.Cookie{
 		Name:     session.CookieName,
 		Value:    jwtCookie,
-		Path:     "/",
 		HttpOnly: true,
 		Secure:   false,
 	})

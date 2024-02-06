@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"auth/database/types"
+	auth "auth/service/middleware"
 	"crypto/sha256"
 	"encoding/base64"
 	"github.com/labstack/echo/v4"
@@ -9,7 +10,7 @@ import (
 )
 
 func ListUsersHandler(ctx echo.Context) error {
-	appID := ctx.Param("appId")
+	appID := ctx.(auth.Context).AppID
 	var app types.App
 	app.ID = appID
 
@@ -21,7 +22,7 @@ func ListUsersHandler(ctx echo.Context) error {
 }
 
 func CreateUserHandler(ctx echo.Context) error {
-	appID := ctx.Param("appId")
+	appID := ctx.(auth.Context).AppID
 
 	var userDTO types.User
 	userDTO.AppID = appID

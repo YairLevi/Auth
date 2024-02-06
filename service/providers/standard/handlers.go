@@ -2,7 +2,7 @@ package standard
 
 import (
 	"auth/database/types"
-	"auth/service/auth"
+	auth "auth/service/middleware"
 	"auth/service/session"
 	"crypto/sha256"
 	"encoding/base64"
@@ -17,18 +17,17 @@ func RegisterHandler(ctx echo.Context) error {
 	registerDTO := struct {
 		types.User
 		Password string `json:"password"`
-		AppID    string `json:"appId"`
 	}{}
-
 	if err := ctx.Bind(&registerDTO); err != nil {
 		return ctx.JSON(http.StatusBadRequest, err)
 	}
+	appID := ctx.(auth.Context).AppID
 
 	hashedPasswordInBytes := sha256.Sum256([]byte(registerDTO.Password))
 	hashedPasswordEncodedString := base64.StdEncoding.EncodeToString(hashedPasswordInBytes[:])
 	user := registerDTO.User
 	user.PasswordHash = hashedPasswordEncodedString
-	user.AppID = registerDTO.AppID
+	user.AppID = appID
 
 	if err := db.Create(&user).Error; err != nil {
 		return ctx.JSON(http.StatusInternalServerError, err)
@@ -42,20 +41,19 @@ func EmailPasswordLoginHandler(ctx echo.Context) error {
 	loginDTO := struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
-		AppID    string `json:"appId"`
 	}{}
-
 	if err := ctx.Bind(&loginDTO); err != nil {
 		return ctx.JSON(http.StatusBadRequest, err)
 	}
+	appID := ctx.(auth.Context).AppID
 
-	appGuard := lockoutManager.AppGuards[loginDTO.AppID]
+	appGuard := lockoutManager.AppGuards[appID]
 	if appGuard != nil {
 		if appGuard.IsLocked(loginDTO.Email) {
 			return ctx.JSON(
-				http.StatusUnauthorized,
+				http.StatusForbidden,
 				fmt.Sprintf(
-					"this email is in lockout state. it will be released in %d seconds.",
+					"this email is in lockout state. it will be released in %.1f seconds.",
 					appGuard.Duration.Seconds(),
 				),
 			)
@@ -65,7 +63,7 @@ func EmailPasswordLoginHandler(ctx echo.Context) error {
 	}
 
 	var user types.User
-	res := db.Where("email = ? AND app_id = ?", loginDTO.Email, loginDTO.AppID).First(&user)
+	res := db.Where("email = ? AND app_id = ?", loginDTO.Email, appID).First(&user)
 	if res.Error != nil {
 		appGuard.Fail(loginDTO.Email)
 		return ctx.JSON(http.StatusUnauthorized, "unauthorized")
@@ -82,7 +80,7 @@ func EmailPasswordLoginHandler(ctx echo.Context) error {
 		Expiration: time.Hour * 24,
 		SigningKey: session.SecretKey,
 		Payload: session.Payload{
-			AppID:  loginDTO.AppID,
+			AppID:  appID,
 			UserID: user.ID,
 		},
 	})
@@ -102,8 +100,6 @@ func EmailPasswordLoginHandler(ctx echo.Context) error {
 }
 
 func CookieLoginHandler(ctx echo.Context) error {
-	fmt.Println(ctx)
-	fmt.Println(ctx.(auth.Context).AppID)
 	jwtCookie, err := ctx.Cookie(session.CookieName)
 	if err != nil {
 		return ctx.JSON(http.StatusUnauthorized, err)
@@ -125,7 +121,7 @@ func CookieLoginHandler(ctx echo.Context) error {
 	appID, okApp := claims["appId"].(string)
 	userID, okUser := claims["userId"].(string)
 	if !okApp || !okUser {
-		return ctx.JSON(http.StatusBadRequest, "Error converting UserID or AppID")
+		return ctx.JSON(http.StatusUnauthorized, "Error converting UserID or AppID")
 	}
 
 	var user types.User
@@ -138,17 +134,9 @@ func CookieLoginHandler(ctx echo.Context) error {
 }
 
 func LogoutHandler(ctx echo.Context) error {
-	logoutDTO := struct {
-		AppID string `json:"appId"`
-	}{}
-	if err := ctx.Bind(&logoutDTO); err != nil {
-		return ctx.JSON(http.StatusBadRequest, err)
-	}
-
 	// <-- Set user status to "CONNECTED" in the database. This is where memphis might be a good idea.
 
 	ctx.SetCookie(&http.Cookie{
-		Path:   "/",
 		Name:   session.CookieName,
 		MaxAge: 0,
 	})

@@ -1,4 +1,4 @@
-package service
+package middleware
 
 import (
 	"auth/database"
@@ -9,9 +9,8 @@ import (
 )
 
 const (
-	ApplicationHeader = "X-App-ID"
-	ConsoleOrigin     = "http://wails.localhost"
-	ConsoleDevOrigin  = "http://localhost:5173"
+	ConsoleOrigin    = "http://wails.localhost"
+	ConsoleDevOrigin = "http://localhost:5173"
 )
 
 func DynamicCORS(next echo.HandlerFunc) echo.HandlerFunc {
@@ -19,12 +18,7 @@ func DynamicCORS(next echo.HandlerFunc) echo.HandlerFunc {
 		origin := c.Request().Header.Get("Origin")
 		appID := c.Request().Header.Get(ApplicationHeader)
 		var allowed types.Origin
-		err := database.DB.
-			Where(&types.Origin{
-				URL:   origin,
-				AppID: appID,
-			}).
-			First(&allowed).Error
+		err := database.DB.Where(&types.Origin{URL: origin, AppID: appID}).First(&allowed).Error
 		isOriginAllowed := err == nil
 
 		// If the origin is allowed, set the CORS headers
