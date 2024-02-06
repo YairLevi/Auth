@@ -104,8 +104,12 @@ func CallbackHandler(ctx echo.Context) error {
 		return ctx.JSON(http.StatusInternalServerError, err)
 
 	}
+	var app types.App
+	if err := db.Where("id = ?", appID).Find(&app).Error; err != nil {
+		return ctx.JSON(http.StatusInternalServerError, "server error signing")
+	}
 	jwtCookie, err := session.GenerateJWT(session.Config{
-		SigningKey: session.SecretKey,
+		SigningKey: app.SessionKey,
 		Expiration: 24 * time.Hour,
 		Payload: session.Payload{
 			AppID:  appID,

@@ -7,7 +7,6 @@ import (
 
 const (
 	CookieName = "session"
-	SecretKey  = "goddamnitshim"
 )
 
 type Payload struct {

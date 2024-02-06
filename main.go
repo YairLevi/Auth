@@ -3,7 +3,7 @@ package main
 import (
 	"auth/service/api"
 	"auth/service/console"
-	mw "auth/service/middleware"
+	authMiddleware "auth/service/middleware"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"log"
@@ -16,8 +16,8 @@ func main() {
 		AllowCredentials:                         true,
 		UnsafeWildcardOriginWithAllowCredentials: true,
 	}))
-	server.Use(mw.AppID)
-	server.Use(mw.DynamicCORS)
+	server.Use(authMiddleware.AppID)
+	server.Use(authMiddleware.DynamicCORS)
 
 	console.SetupEndpoints(server)
 	api.SetupEndpoints(server)

@@ -76,9 +76,13 @@ func EmailPasswordLoginHandler(ctx echo.Context) error {
 		appGuard.Fail(loginDTO.Email)
 		return ctx.JSON(http.StatusUnauthorized, "unauthorized")
 	}
+	var app types.App
+	if err := db.Where("id = ?", appID).Find(&app).Error; err != nil {
+		return ctx.JSON(http.StatusInternalServerError, "server error signing")
+	}
 	jwtCookie, err := session.GenerateJWT(session.Config{
 		Expiration: time.Hour * 24,
-		SigningKey: session.SecretKey,
+		SigningKey: app.SessionKey,
 		Payload: session.Payload{
 			AppID:  appID,
 			UserID: user.ID,
@@ -105,8 +109,14 @@ func CookieLoginHandler(ctx echo.Context) error {
 		return ctx.JSON(http.StatusUnauthorized, err)
 	}
 
+	var app types.App
+	if err := db.Where("id = ?", ctx.(auth.Context).AppID).Find(&app).Error; err != nil {
+		return ctx.JSON(http.StatusInternalServerError, "server error signing")
+	}
+	signKey := app.SessionKey
+
 	token, err := jwt.Parse(jwtCookie.Value, func(token *jwt.Token) (interface{}, error) {
-		return []byte(session.SecretKey), nil
+		return []byte(signKey), nil
 	})
 
 	if err != nil || !token.Valid {
