@@ -1,7 +1,7 @@
 package database
 
 import (
-	types2 "auth/service/database/types"
+	"auth/service/database/types"
 	"fmt"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -17,12 +17,18 @@ func init() {
 	if err != nil {
 		panic(fmt.Sprint("Failed to open database connection:", err))
 	}
+	d, _ := db.DB()
 
+	// for sqlite, enable foreign_keys support.
+	var enabled bool
+	d.QueryRow("PRAGMA foreign_keys = ON;").Scan(&enabled)
 	err = db.AutoMigrate(
-		&types2.User{},
-		&types2.Origin{},
-		&types2.App{},
-		&types2.OAuthProvider{},
+		&types.User{},
+		&types.Origin{},
+		&types.App{},
+		&types.OAuthProvider{},
+		&types.Role{},
+		&types.UserRole{},
 	)
 	if err != nil {
 		panic(fmt.Sprint("GORM failed to migrate types to proper SQL tables."))

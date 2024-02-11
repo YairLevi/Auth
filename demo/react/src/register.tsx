@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import axios from "axios";
+import { User } from "./lib/types";
 
 export function Register() {
   const emailRef = useRef<HTMLInputElement>()

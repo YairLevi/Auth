@@ -1,6 +1,6 @@
-import { createContext, PropsWithChildren, useContext, useEffect, useState } from "react";
-import { Exports, User } from "./types"
-import axios from "axios"
+import { createContext, PropsWithChildren, useContext, useEffect, useMemo, useState } from "react";
+import { Exports, Provider, User } from "./types"
+import axios, { Axios } from "axios"
 import { setupAxiosAndGetEndpoints } from "./endpoints";
 
 const AuthContext = createContext<Exports>({} as Exports)
@@ -12,55 +12,44 @@ export function useAuth() {
 type AuthContextPros = {
   appId: string
   serviceURL: string
+  password: string
 }
 
-export function AuthProvider({ children, serviceURL, appId }: PropsWithChildren & AuthContextPros) {
+export function AuthProvider({ children, serviceURL, appId, password }: PropsWithChildren & AuthContextPros) {
   const [user, setUser] = useState<User>()
   const isSignedIn = !!user
   const endpoints = setupAxiosAndGetEndpoints(serviceURL, appId)
 
   axios.defaults.headers["X-App-ID"] = appId
+  axios.defaults.headers["X-PW"] = password
+  const instance = useMemo(() => axios.create({ withCredentials: true }), [])
 
   useEffect(() => {
     (function () {
-      axios.get(endpoints.loginCookie, {
-        withCredentials: true,
-      })
+      instance.get(endpoints.loginCookie)
         .then(res => setUser(res.data))
         .catch(err => console.log(err))
     })()
   }, [])
 
   function login(email: string, password: string) {
-    axios.post(endpoints.loginEmailPassword, {
-      email, password, appId
-    }, {
-      withCredentials: true,
-    })
-      .then(res => {
-        console.log(res.data)
-        setUser(res.data)
-      })
+    axios.post(endpoints.loginEmailPassword, { email, password })
+      .then(res => setUser(res.data))
       .catch(err => console.log(err))
   }
 
   function logout() {
-    axios.post(endpoints.logout, { appId, }, { withCredentials: true, })
+    axios.post(endpoints.logout)
       .then(_ => setUser(null))
       .catch(err => console.log(err))
   }
 
-  function loginWithGoogle() {
-    window.location.href = `http://localhost:9999/api/google/${appId}/login`
+  function loginWithProvider(provider: Provider) {
+    window.location.href = `${serviceURL}/api/${provider}/login`
   }
-
-  function loginWithGithub() {
-    window.location.href = `http://localhost:9999/api/github/${appId}/login`
-  }
-
 
   const value = {
-    user, login, logout, isSignedIn, loginWithGoogle, loginWithGithub
+    user, login, logout, isSignedIn, loginWithProvider
   }
 
   return (

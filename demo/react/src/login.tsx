@@ -1,11 +1,8 @@
 import { useRef } from "react";
 import { useAuth } from "./lib/context";
-import { GoogleLogin, GoogleLoginResponse, GoogleLogout } from 'react-google-login'
-import google from './client_secret.json'
-import axios from "axios";
 
 export function Login() {
-  const { login, loginWithGoogle, loginWithGithub } = useAuth()
+  const { login, loginWithProvider } = useAuth()
   const emailRef = useRef<HTMLInputElement>()
   const passwordRef = useRef<HTMLInputElement>()
   return (
@@ -21,8 +18,8 @@ export function Login() {
         padding: "0.3rem 0.5rem"
       }}/>
       <button onClick={() => login(emailRef.current.value, passwordRef.current.value)}>Login</button>
-      <button onClick={() => loginWithGoogle()}>Sign in google</button>
-      <button onClick={() => loginWithGithub()}>Sign in Github</button>
+      <button onClick={() => loginWithProvider("google")}>Sign in google</button>
+      <button onClick={() => loginWithProvider("github")}>Sign in Github</button>
     </div>
   )
 }

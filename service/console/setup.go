@@ -1,7 +1,7 @@
 package console
 
 import (
-	handlers2 "auth/service/console/handlers"
+	"auth/service/console/handlers"
 	"auth/service/console/handlers/providers"
 	"auth/service/database"
 	"github.com/labstack/echo/v4"
@@ -10,24 +10,24 @@ import (
 var db = database.DB
 
 func setupAppsEndpoints(router *echo.Group) {
-	router.GET("/", handlers2.ListAppsHandler)
-	router.POST("/", handlers2.CreateAppHandler)
-	router.GET("/:appId", handlers2.GetAppHandler)
-	router.DELETE("/:appId", handlers2.DeleteAppHandler)
+	router.GET("/", handlers.ListAppsHandler)
+	router.POST("/", handlers.CreateAppHandler)
+	router.GET("/:appId", handlers.GetAppHandler)
+	router.DELETE("/:appId", handlers.DeleteAppHandler)
 }
 
 func setupSecurityEndpoints(router *echo.Group) {
-	router.GET("/", handlers2.GetSecuritySettingsHandler)
-	router.POST("/lockout/threshold", handlers2.SetLockoutThresholdHandler)
-	router.POST("/lockout/duration", handlers2.SetLockoutDurationHandler)
-	router.POST("/origins", handlers2.AddOriginHandler)
-	router.POST("/session", handlers2.SetSessionKeyHandler)
+	router.GET("/", handlers.GetSecuritySettingsHandler)
+	router.POST("/lockout/threshold", handlers.SetLockoutThresholdHandler)
+	router.POST("/lockout/duration", handlers.SetLockoutDurationHandler)
+	router.POST("/origins", handlers.AddOriginHandler)
+	router.POST("/session", handlers.SetSessionKeyHandler)
 }
 
 func setupUsersEndpoints(router *echo.Group) {
-	router.GET("/", handlers2.ListUsersHandler)
-	router.POST("/", handlers2.CreateUserHandler)
-	router.DELETE("/:userId", handlers2.DeleteUserHandler)
+	router.GET("/", handlers.ListUsersHandler)
+	router.POST("/", handlers.CreateUserHandler)
+	router.DELETE("/:userId", handlers.DeleteUserHandler)
 }
 
 func setupOAuthEndpoints(router *echo.Group) {

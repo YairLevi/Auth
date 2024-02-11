@@ -1,0 +1,138 @@
+package roles
+
+import (
+	"auth/service/database"
+	"auth/service/database/types"
+	auth "auth/service/middleware"
+	"fmt"
+	"github.com/labstack/echo/v4"
+	"net/http"
+)
+
+func GetRoles(ctx echo.Context) error {
+	userID := ctx.Param("userId")
+
+	var userRoles []types.UserRole
+	if err := database.DB.Where(&types.UserRole{UserID: userID}).Find(&userRoles).Error; err != nil {
+		fmt.Println(err)
+		return ctx.JSON(http.StatusBadRequest, "error getting user role IDs")
+	}
+
+	roleIDs := make([]string, 0)
+	for _, userRole := range userRoles {
+		roleIDs = append(roleIDs, userRole.RoleID)
+	}
+
+	roles := make([]types.Role, 0)
+	if err := database.DB.Where("id IN (?)", roleIDs).Find(&roles).Error; err != nil {
+		return ctx.JSON(http.StatusBadRequest, "error getting user roles")
+	}
+
+	roleNames := make([]string, 0)
+	for _, role := range roles {
+		roleNames = append(roleNames, role.Name)
+	}
+
+	return ctx.JSON(http.StatusOK, roleNames)
+}
+
+func AddRole(ctx echo.Context) error {
+	appID := ctx.(auth.Context).AppID
+
+	role := types.Role{
+		AppID: appID,
+	}
+	if err := ctx.Bind(&role); err != nil {
+		return ctx.JSON(http.StatusBadRequest, "error in payload")
+	}
+
+	if err := database.DB.Create(&role).Error; err != nil {
+		return ctx.JSON(http.StatusInternalServerError, "error adding role")
+	}
+
+	return ctx.JSON(http.StatusOK, &role)
+}
+
+func DeleteRole(ctx echo.Context) error {
+	appID := ctx.(auth.Context).AppID
+
+	dto := struct {
+		Name string `json:"name"`
+	}{}
+	if err := ctx.Bind(&dto); err != nil {
+		return ctx.JSON(http.StatusBadRequest, "error in payload")
+	}
+
+	role := types.Role{
+		AppID: appID,
+		Name:  dto.Name,
+	}
+	if err := database.DB.Unscoped().Where(&role).Delete(&role).Error; err != nil {
+		fmt.Println(err)
+		return ctx.JSON(http.StatusInternalServerError, "error deleting")
+	}
+
+	return ctx.NoContent(http.StatusNoContent)
+}
+
+func AssignRoleToUser(ctx echo.Context) error {
+	appID := ctx.(auth.Context).AppID
+	userID := ctx.Param("userId")
+
+	dto := struct {
+		Role string `json:"role"`
+	}{}
+	if err := ctx.Bind(&dto); err != nil {
+		return ctx.JSON(http.StatusBadRequest, "error in payload")
+	}
+
+	role := types.Role{
+		AppID: appID,
+		Name:  dto.Role,
+	}
+	if err := database.DB.Where(&role).Find(&role).Error; err != nil {
+		return ctx.JSON(http.StatusBadRequest, fmt.Sprint("error no such role", dto.Role, "for app"))
+	}
+
+	userRole := types.UserRole{
+		RoleID: role.ID,
+		UserID: userID,
+	}
+	if err := database.DB.Create(&userRole).Error; err != nil {
+		fmt.Println(err)
+		return ctx.JSON(http.StatusInternalServerError, "error assign role to user")
+	}
+
+	return ctx.NoContent(http.StatusCreated)
+}
+
+func RevokeRoleFromUser(ctx echo.Context) error {
+	appID := ctx.(auth.Context).AppID
+	userID := ctx.Param("userId")
+
+	dto := struct {
+		Role string `json:"role"`
+	}{}
+	if err := ctx.Bind(&dto); err != nil {
+		return ctx.JSON(http.StatusBadRequest, "error in payload")
+	}
+
+	role := types.Role{
+		AppID: appID,
+		Name:  dto.Role,
+	}
+	if err := database.DB.Find(&role).Error; err != nil {
+		return ctx.JSON(http.StatusBadRequest, fmt.Sprint("error no such role", dto.Role, "for app"))
+	}
+
+	userRole := types.UserRole{
+		RoleID: role.ID,
+		UserID: userID,
+	}
+
+	if err := database.DB.Delete(&userRole).Error; err != nil {
+		fmt.Println(err)
+		return ctx.JSON(http.StatusBadRequest, fmt.Sprint("failed to revoke role", role.Name, "from user."))
+	}
+	return ctx.NoContent(http.StatusNoContent)
+}

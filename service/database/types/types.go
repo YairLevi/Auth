@@ -6,9 +6,9 @@ import (
 
 type User struct {
 	Model
+	App          App
 	AppID        string    `json:"-"`
-	FirstName    string    `json:"firstName"`
-	LastName     string    `json:"lastName"`
+	Username     string    `json:"username`
 	Email        string    `json:"email"`
 	PasswordHash string    `json:"passwordHash"`
 	PhoneNumber  string    `json:"phoneNumber"`
@@ -28,6 +28,25 @@ type App struct {
 
 type Origin struct {
 	Model
+	App   App
 	AppID string `json:"-"`
 	URL   string `json:"url"`
+}
+
+type Role struct {
+	Model
+	App   App    `json:"-"`
+	AppID string `json:"appId"`
+	Name  string `json:"name" gorm:"unique"`
+
+	// this is redundant, but is used to enable a cascade delete from children to parents.
+	UserRoles []UserRole `gorm:"constraint:OnDelete:CASCADE"`
+}
+
+type UserRole struct {
+	Model
+	RoleID string
+	Role   Role
+	UserID string
+	User   User
 }

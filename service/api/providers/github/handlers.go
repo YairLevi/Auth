@@ -94,7 +94,7 @@ func CallbackHandler(ctx echo.Context) error {
 		if !ok {
 			userName = userInfo["login"].(string) // guaranteed to work. GitHub forces to have a login name.
 		}
-		user.FirstName = userName
+		user.Username = userName
 		user.AppID = appID
 		if err := db.Create(&user).Error; err != nil {
 			return ctx.JSON(http.StatusInternalServerError, err)

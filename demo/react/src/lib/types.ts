@@ -16,11 +16,14 @@ export type User = Model & {
   birthday: Date
 }
 
+export type Provider =
+  | "google"
+  | "github"
+
 export type Exports = {
   user: User,
   isSignedIn: boolean
   login: (email: string, password: string) => void
+  loginWithProvider: (provider: Provider) => void
   logout: () => void
-  loginWithGoogle: () => void
-  loginWithGithub: () => void
 }
