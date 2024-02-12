@@ -8,11 +8,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-//func setupProfileEndpoints(router *echo.Group) {
-//	router.GET("/:userId", profile.GetByIDHandler)
-//	router.PATCH("/:userId", profile.UpdateHandler)
-//}
-
 func setupServiceApiEndpoints(router *echo.Group) {
 	router.POST("/register", standard.RegisterHandler)
 	router.POST("/login", standard.EmailPasswordLoginHandler)
@@ -40,7 +35,6 @@ func setupRolesRoutes(router *echo.Group) {
 
 func SetupEndpoints(server *echo.Echo) {
 	apiV1 := server.Group("/api")
-	//setupProfileEndpoints(apiV1.Group("/profile"))
 	setupServiceApiEndpoints(apiV1.Group("/"))
 	setupGoogleAuthRoutes(apiV1.Group("/google"))
 	setupGithubAuthRoutes(apiV1.Group("/github"))

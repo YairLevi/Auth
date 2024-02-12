@@ -8,7 +8,7 @@ type User struct {
 	Model
 	App          App
 	AppID        string    `json:"-"`
-	Username     string    `json:"username`
+	Username     string    `json:"username"`
 	Email        string    `json:"email"`
 	PasswordHash string    `json:"passwordHash"`
 	PhoneNumber  string    `json:"phoneNumber"`
