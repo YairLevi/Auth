@@ -28,6 +28,7 @@ func setupUsersEndpoints(router *echo.Group) {
 	router.GET("/", handlers.ListUsersHandler)
 	router.POST("/", handlers.CreateUserHandler)
 	router.DELETE("/:userId", handlers.DeleteUserHandler)
+	router.PATCH("/:userId", handlers.UpdateUserHandler)
 }
 
 func setupOAuthEndpoints(router *echo.Group) {
