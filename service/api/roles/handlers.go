@@ -3,7 +3,6 @@ package roles
 import (
 	"auth/service/database"
 	"auth/service/database/types"
-	auth "auth/service/middleware"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -37,11 +36,7 @@ func GetRoles(ctx echo.Context) error {
 }
 
 func AddRole(ctx echo.Context) error {
-	appID := ctx.(auth.Context).AppID
-
-	role := types.Role{
-		AppID: appID,
-	}
+	role := types.Role{}
 	if err := ctx.Bind(&role); err != nil {
 		return ctx.JSON(http.StatusBadRequest, "error in payload")
 	}
@@ -54,8 +49,6 @@ func AddRole(ctx echo.Context) error {
 }
 
 func DeleteRole(ctx echo.Context) error {
-	appID := ctx.(auth.Context).AppID
-
 	dto := struct {
 		Name string `json:"name"`
 	}{}
@@ -64,8 +57,7 @@ func DeleteRole(ctx echo.Context) error {
 	}
 
 	role := types.Role{
-		AppID: appID,
-		Name:  dto.Name,
+		Name: dto.Name,
 	}
 	if err := database.DB.Unscoped().Where(&role).Delete(&role).Error; err != nil {
 		fmt.Println(err)
@@ -76,7 +68,6 @@ func DeleteRole(ctx echo.Context) error {
 }
 
 func AssignRoleToUser(ctx echo.Context) error {
-	appID := ctx.(auth.Context).AppID
 	userID := ctx.Param("userId")
 
 	dto := struct {
@@ -87,8 +78,7 @@ func AssignRoleToUser(ctx echo.Context) error {
 	}
 
 	role := types.Role{
-		AppID: appID,
-		Name:  dto.Role,
+		Name: dto.Role,
 	}
 	if err := database.DB.Where(&role).Find(&role).Error; err != nil {
 		return ctx.JSON(http.StatusBadRequest, fmt.Sprint("error no such role", dto.Role, "for app"))
@@ -107,7 +97,6 @@ func AssignRoleToUser(ctx echo.Context) error {
 }
 
 func RevokeRoleFromUser(ctx echo.Context) error {
-	appID := ctx.(auth.Context).AppID
 	userID := ctx.Param("userId")
 
 	dto := struct {
@@ -118,8 +107,7 @@ func RevokeRoleFromUser(ctx echo.Context) error {
 	}
 
 	role := types.Role{
-		AppID: appID,
-		Name:  dto.Role,
+		Name: dto.Role,
 	}
 	if err := database.DB.Find(&role).Error; err != nil {
 		return ctx.JSON(http.StatusBadRequest, fmt.Sprint("error no such role", dto.Role, "for app"))

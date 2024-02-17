@@ -4,7 +4,6 @@ import (
 	"auth/service/api/providers"
 	"auth/service/database"
 	"auth/service/database/types"
-	auth "auth/service/middleware"
 	"auth/service/session"
 	"encoding/json"
 	"errors"
@@ -17,22 +16,16 @@ import (
 var db = database.DB
 
 func LoginHandler(ctx echo.Context) error {
-	appID := ctx.(auth.Context).AppID
-	githubOauthConfig, err := providers.GetConfigByAppID(appID, providers.Github)
+	githubOauthConfig, err := providers.GetOAuthConfig(providers.Github)
 	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, "invalid app ID")
+		return ctx.JSON(http.StatusBadRequest, "error in security config")
 	}
-	url := githubOauthConfig.AuthCodeURL(appID)
+	url := githubOauthConfig.AuthCodeURL("state")
 	return ctx.Redirect(http.StatusTemporaryRedirect, url)
 }
 
 func CallbackHandler(ctx echo.Context) error {
-	appID := ctx.QueryParam("state")
-	if appID == "" {
-		return ctx.JSON(http.StatusBadRequest, "invalid app ID")
-	}
-
-	oauthConfig, err := providers.GetConfigByAppID(appID, providers.Github)
+	oauthConfig, err := providers.GetOAuthConfig(providers.Github)
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, err)
 	}
@@ -95,7 +88,6 @@ func CallbackHandler(ctx echo.Context) error {
 			userName = userInfo["login"].(string) // guaranteed to work. GitHub forces to have a login name.
 		}
 		user.Username = userName
-		user.AppID = appID
 		if err := db.Create(&user).Error; err != nil {
 			return ctx.JSON(http.StatusInternalServerError, err)
 
@@ -104,15 +96,14 @@ func CallbackHandler(ctx echo.Context) error {
 		return ctx.JSON(http.StatusInternalServerError, err)
 
 	}
-	var app types.App
-	if err := db.Where("id = ?", appID).Find(&app).Error; err != nil {
+	var security types.SecurityConfig
+	if err := db.First(&security).Error; err != nil {
 		return ctx.JSON(http.StatusInternalServerError, "server error signing")
 	}
 	jwtCookie, err := session.GenerateJWT(session.Config{
-		SigningKey: app.SessionKey,
+		SigningKey: security.SessionKey,
 		Expiration: 24 * time.Hour,
 		Payload: session.Payload{
-			AppID:  appID,
 			UserID: user.ID,
 		},
 	})
@@ -125,7 +116,7 @@ func CallbackHandler(ctx echo.Context) error {
 		Value:    jwtCookie,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   false,
+		Secure:   true,
 	})
 	return ctx.Redirect(http.StatusTemporaryRedirect, "http://localhost:3000")
 }

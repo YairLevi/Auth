@@ -6,21 +6,21 @@ import (
 
 type User struct {
 	Model
-	App          App
-	AppID        string    `json:"-"`
 	Username     string    `json:"username"`
 	Email        string    `json:"email"`
 	PasswordHash string    `json:"passwordHash"`
 	PhoneNumber  string    `json:"phoneNumber"`
+	PhotoURL     string    `json:"photoURL"`
 	LastLogin    time.Time `json:"lastLogin"`
 	Birthday     time.Time `json:"birthday"`
+
+	// this is redundant, but is used to enable cascade delete
+	UserRoles []UserRole `gorm:"constraint:OnDelete:CASCADE"`
 }
 
-type App struct {
+type SecurityConfig struct {
 	Model
-	Name             string   `json:"name"`
-	Users            []User   `json:"users"`
-	Origins          []Origin `json:"allowedOrigins"`
+	Origins          []Origin `json:"origins"`
 	LockoutThreshold int      `json:"lockoutThreshold" gorm:"default:5"`
 	LockoutDuration  int      `json:"lockoutDuration" gorm:"default:30"`
 	SessionKey       string   `json:"sessionKey" gorm:"default:'session key'"`
@@ -28,17 +28,12 @@ type App struct {
 
 type Origin struct {
 	Model
-	App   App
-	AppID string `json:"-"`
-	URL   string `json:"url"`
+	URL string `json:"url"`
 }
 
 type Role struct {
 	Model
-	App   App    `json:"-"`
-	AppID string `json:"appId"`
-	Name  string `json:"name" gorm:"unique"`
-
+	Name string `json:"name" gorm:"unique"`
 	// this is redundant, but is used to enable a cascade delete from children to parents.
 	UserRoles []UserRole `gorm:"constraint:OnDelete:CASCADE"`
 }

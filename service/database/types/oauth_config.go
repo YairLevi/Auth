@@ -14,10 +14,8 @@ type OAuthConfig struct {
 
 type OAuthProvider struct {
 	Model
-	AppID    string
-	App      App
-	Config   OAuthConfig
-	Provider string
+	Config OAuthConfig
+	Name   string
 }
 
 func (config *OAuthConfig) Scan(value interface{}) error {

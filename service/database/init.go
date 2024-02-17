@@ -25,7 +25,7 @@ func init() {
 	err = db.AutoMigrate(
 		&types.User{},
 		&types.Origin{},
-		&types.App{},
+		&types.SecurityConfig{},
 		&types.OAuthProvider{},
 		&types.Role{},
 		&types.UserRole{},

@@ -5,7 +5,6 @@ import (
 	"auth/service/database/types"
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
@@ -50,14 +49,10 @@ func UpdateProviderCredentialsHandler(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, err)
 	}
 
-	appID := ctx.Param("appId")
 	providerName := ctx.Param("provider")
-	if appID == "" || providerName == "" {
-		return ctx.JSON(http.StatusBadRequest, "empty app ID or provider name")
-	}
 
 	var provider types.OAuthProvider
-	err := db.Unscoped().Where("app_id = ? AND provider = ?", appID, providerName).First(&provider).Error
+	err := db.Unscoped().Where("name = ?", providerName).First(&provider).Error
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, err)
 	}
@@ -71,15 +66,10 @@ func UpdateProviderCredentialsHandler(ctx echo.Context) error {
 }
 
 func EnableProviderHandler(ctx echo.Context) error {
-	appID := ctx.Param("appId")
 	providerName := ctx.Param("provider")
-	if appID == "" || providerName == "" {
-		return ctx.JSON(http.StatusBadRequest, "empty app ID or provider name")
-	}
-
 	var provider types.OAuthProvider
 	// ignore DELETED_AT.
-	err := db.Unscoped().Where("app_id = ? AND provider = ?", appID, providerName).First(&provider).Error
+	err := db.Unscoped().Where("name = ?", providerName).First(&provider).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		info := getProviderInfo(providerName)
@@ -92,9 +82,8 @@ func EnableProviderHandler(ctx echo.Context) error {
 		}
 
 		config := types.OAuthProvider{
-			AppID:    appID,
-			Provider: providerName,
-			Config:   types.OAuthConfig{Config: oauth2Config},
+			Config: types.OAuthConfig{Config: oauth2Config},
+			Name:   providerName,
 		}
 
 		if err := db.Create(&config).Error; err != nil {
@@ -115,14 +104,9 @@ func EnableProviderHandler(ctx echo.Context) error {
 
 func DisableProviderHandler(ctx echo.Context) error {
 	providerName := ctx.Param("provider")
-	appID := ctx.Param("appId")
-	if appID == "" || providerName == "" {
-		return ctx.JSON(http.StatusBadRequest, "empty app ID or provider name")
-	}
-
 	var provider types.OAuthProvider
 	// ignore DELETED_AT.
-	err := db.Where("app_id = ? AND provider = ?", appID, providerName).First(&provider).Error
+	err := db.Where("provider = ?", providerName).First(&provider).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return ctx.JSON(http.StatusInternalServerError, err)
 	}
@@ -135,13 +119,8 @@ func DisableProviderHandler(ctx echo.Context) error {
 }
 
 func GetProvidersStateHandler(ctx echo.Context) error {
-	appID := ctx.Param("appId")
-	if appID == "" {
-		return ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid app ID"})
-	}
-
 	var providers []types.OAuthProvider
-	if err := db.Unscoped().Where("app_id = ?", appID).Find(&providers).Error; err != nil {
+	if err := db.Unscoped().Find(&providers).Error; err != nil {
 		return ctx.JSON(http.StatusInternalServerError, err)
 	}
 
@@ -154,7 +133,7 @@ func GetProvidersStateHandler(ctx echo.Context) error {
 	states := make(map[string]ProviderState, 1)
 
 	for _, provider := range providers {
-		states[provider.Provider] = ProviderState{
+		states[provider.Name] = ProviderState{
 			Enabled:      !provider.DeletedAt.Valid,
 			ClientID:     provider.Config.ClientID,
 			ClientSecret: provider.Config.ClientSecret,

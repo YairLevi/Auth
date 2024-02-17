@@ -2,11 +2,8 @@ package standard
 
 import (
 	"auth/service/database/types"
-	auth "auth/service/middleware"
 	"auth/service/session"
-	"crypto/sha256"
-	"encoding/base64"
-	"fmt"
+	"auth/service/tools/password"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -21,19 +18,13 @@ func RegisterHandler(ctx echo.Context) error {
 	if err := ctx.Bind(&registerDTO); err != nil {
 		return ctx.JSON(http.StatusBadRequest, err)
 	}
-	appID := ctx.(auth.Context).AppID
 
-	hashedPasswordInBytes := sha256.Sum256([]byte(registerDTO.Password))
-	hashedPasswordEncodedString := base64.StdEncoding.EncodeToString(hashedPasswordInBytes[:])
 	user := registerDTO.User
-	user.PasswordHash = hashedPasswordEncodedString
-	user.AppID = appID
+	user.PasswordHash = password.Encrypt(registerDTO.Password)
 
 	if err := db.Create(&user).Error; err != nil {
 		return ctx.JSON(http.StatusInternalServerError, err)
-
 	}
-
 	return ctx.JSON(http.StatusOK, &user)
 }
 
@@ -45,46 +36,40 @@ func EmailPasswordLoginHandler(ctx echo.Context) error {
 	if err := ctx.Bind(&loginDTO); err != nil {
 		return ctx.JSON(http.StatusBadRequest, err)
 	}
-	appID := ctx.(auth.Context).AppID
 
-	appGuard := lockoutManager.AppGuards[appID]
-	if appGuard != nil {
-		if appGuard.IsLocked(loginDTO.Email) {
-			return ctx.JSON(
-				http.StatusForbidden,
-				fmt.Sprintf(
-					"this email is in lockout state. it will be released in %.1f seconds.",
-					appGuard.Duration.Seconds(),
-				),
-			)
-		}
-	} else {
-		fmt.Println("lockout guard is nil")
-	}
+	//appGuard := lockoutManager.AppGuards[appID]
+	//if appGuard != nil {
+	//	if appGuard.IsLocked(loginDTO.Email) {
+	//		return ctx.JSON(
+	//			http.StatusForbidden,
+	//			fmt.Sprintf(
+	//				"this email is in lockout state. it will be released in %.1f seconds.",
+	//				appGuard.Duration.Seconds(),
+	//			),
+	//		)
+	//	}
+	//} else {
+	//	fmt.Println("lockout guard is nil")
+	//}
 
 	var user types.User
-	res := db.Where("email = ? AND app_id = ?", loginDTO.Email, appID).First(&user)
-	if res.Error != nil {
-		appGuard.Fail(loginDTO.Email)
+	if err := db.Where("email = ?", loginDTO.Email).First(&user).Error; err != nil {
 		return ctx.JSON(http.StatusUnauthorized, "unauthorized")
 	}
 
-	hashedPasswordInBytes := sha256.Sum256([]byte(loginDTO.Password))
-	hashedPasswordEncodedString := base64.StdEncoding.EncodeToString(hashedPasswordInBytes[:])
-
-	if hashedPasswordEncodedString != user.PasswordHash {
-		appGuard.Fail(loginDTO.Email)
+	if password.IsEqual(loginDTO.Password, user.PasswordHash) {
 		return ctx.JSON(http.StatusUnauthorized, "unauthorized")
 	}
-	var app types.App
-	if err := db.Where("id = ?", appID).Find(&app).Error; err != nil {
-		return ctx.JSON(http.StatusInternalServerError, "server error signing")
+
+	var security types.SecurityConfig
+	if err := db.First(&security).Error; err != nil {
+		return ctx.JSON(http.StatusInternalServerError, err)
 	}
+
 	jwtCookie, err := session.GenerateJWT(session.Config{
 		Expiration: time.Hour * 24,
-		SigningKey: app.SessionKey,
+		SigningKey: security.SessionKey,
 		Payload: session.Payload{
-			AppID:  appID,
 			UserID: user.ID,
 		},
 	})
@@ -109,14 +94,13 @@ func CookieLoginHandler(ctx echo.Context) error {
 		return ctx.JSON(http.StatusUnauthorized, err)
 	}
 
-	var app types.App
-	if err := db.Where("id = ?", ctx.(auth.Context).AppID).Find(&app).Error; err != nil {
+	var security types.SecurityConfig
+	if err := db.First(&security).Error; err != nil {
 		return ctx.JSON(http.StatusInternalServerError, "server error signing")
 	}
-	signKey := app.SessionKey
 
 	token, err := jwt.Parse(jwtCookie.Value, func(token *jwt.Token) (interface{}, error) {
-		return []byte(signKey), nil
+		return []byte(security.SessionKey), nil
 	})
 
 	if err != nil || !token.Valid {
@@ -128,15 +112,14 @@ func CookieLoginHandler(ctx echo.Context) error {
 		return ctx.JSON(http.StatusInternalServerError, "claims error in token")
 	}
 
-	appID, okApp := claims["appId"].(string)
 	userID, okUser := claims["userId"].(string)
-	if !okApp || !okUser {
-		return ctx.JSON(http.StatusUnauthorized, "Error converting UserID or AppID")
+	if !okUser {
+		return ctx.JSON(http.StatusUnauthorized, "Error converting UserID")
 	}
 
 	var user types.User
 	user.ID = userID
-	if err := db.Where("app_id = ?", appID).First(&user).Error; err != nil {
+	if err := db.Where(&user).First(&user).Error; err != nil {
 		return ctx.JSON(http.StatusInternalServerError, err)
 	}
 

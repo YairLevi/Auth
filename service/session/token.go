@@ -10,12 +10,11 @@ const (
 )
 
 type Payload struct {
-	AppID  string `json:"appId"`
 	UserID string `json:"userId"`
 }
 
 type Config struct {
-	Payload    Payload
+	Payload    interface{}
 	Expiration time.Duration
 	SigningKey string
 }
@@ -24,8 +23,7 @@ func GenerateJWT(config Config) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	claims["iat"] = time.Now().Unix()
-	claims["appId"] = config.Payload.AppID
-	claims["userId"] = config.Payload.UserID
+	claims["userId"] = config.Payload
 	claims["exp"] = time.Now().Add(config.Expiration).Unix()
 	secret := []byte(config.SigningKey)
 	signedToken, err := token.SignedString(secret)

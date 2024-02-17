@@ -9,19 +9,12 @@ import (
 
 var db = database.DB
 
-func setupAppsEndpoints(router *echo.Group) {
-	router.GET("/", handlers.ListAppsHandler)
-	router.POST("/", handlers.CreateAppHandler)
-	router.GET("/:appId", handlers.GetAppHandler)
-	router.DELETE("/:appId", handlers.DeleteAppHandler)
-}
-
 func setupSecurityEndpoints(router *echo.Group) {
 	router.GET("/", handlers.GetSecuritySettingsHandler)
-	router.POST("/lockout/threshold", handlers.SetLockoutThresholdHandler)
-	router.POST("/lockout/duration", handlers.SetLockoutDurationHandler)
-	router.POST("/origins", handlers.AddOriginHandler)
-	router.POST("/session", handlers.SetSessionKeyHandler)
+	router.PUT("/lockout/threshold", handlers.SetLockoutThresholdHandler)
+	router.PUT("/lockout/duration", handlers.SetLockoutDurationHandler)
+	router.PUT("/origins", handlers.AddOriginHandler)
+	router.PUT("/session", handlers.SetSessionKeyHandler)
 }
 
 func setupUsersEndpoints(router *echo.Group) {
@@ -33,18 +26,14 @@ func setupUsersEndpoints(router *echo.Group) {
 
 func setupOAuthEndpoints(router *echo.Group) {
 	router.GET("/providers", providers.GetProvidersStateHandler)
-	router.PUT("/:provider/enable", providers.EnableProviderHandler)
-	router.PUT("/:provider/update", providers.UpdateProviderCredentialsHandler)
-	router.DELETE("/:provider/disable", providers.DisableProviderHandler)
-}
-
-func SetupSingleAppEndpoints(router *echo.Group) {
-	setupUsersEndpoints(router.Group("/users"))
-	setupOAuthEndpoints(router.Group("/oauth"))
-	setupSecurityEndpoints(router.Group("/security"))
+	router.PUT("/:provider", providers.UpdateProviderCredentialsHandler)
+	router.POST("/:provider", providers.EnableProviderHandler)
+	router.DELETE("/:provider", providers.DisableProviderHandler)
 }
 
 func SetupEndpoints(server *echo.Echo) {
-	setupAppsEndpoints(server.Group("/apps"))
-	SetupSingleAppEndpoints(server.Group("/apps/:appId"))
+	router := server.Group("/console")
+	setupUsersEndpoints(router.Group("/users"))
+	setupOAuthEndpoints(router.Group("/oauth"))
+	setupSecurityEndpoints(router.Group("/security"))
 }
