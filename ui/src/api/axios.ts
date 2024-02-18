@@ -1,7 +1,7 @@
-import axios from "axios";
+import axios, { Axios } from "axios";
 import { parseISO } from "date-fns";
 
-const DEV_ADDR = 'http://localhost:9999'
+export const DEV_ADDR = 'http://localhost:9999'
 axios.defaults.baseURL = DEV_ADDR
 const ISODateFormat = /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d*)?(?:[-+]\d{2}:?\d{2}|Z)?)?$/;
 
@@ -30,3 +30,15 @@ axios.interceptors.request.use((rep) => {
   handleDates(rep.data)
   return rep
 })
+
+export function createAxiosCaller(ax: Axios) {
+  ax.interceptors.response.use((rep) => {
+    handleDates(rep.data);
+    return rep;
+  });
+  ax.interceptors.request.use((rep) => {
+    handleDates(rep.data)
+    return rep
+  })
+  return ax
+}

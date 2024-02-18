@@ -16,7 +16,6 @@ func main() {
 		AllowCredentials:                         true,
 		UnsafeWildcardOriginWithAllowCredentials: true,
 	}))
-	server.Use(authMiddleware.AppID)
 	server.Use(authMiddleware.DynamicCORS)
 
 	console.SetupEndpoints(server)

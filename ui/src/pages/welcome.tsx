@@ -17,7 +17,7 @@ export function Welcome() {
       res = await axios.get('/test')
       console.log(res.status)
       if (res.status == axios.HttpStatusCode.Ok) {
-        navigate("/apps")
+        navigate("/console/users")
       } else {
         setError("Couldn't connect. Check your service's status.")
       }

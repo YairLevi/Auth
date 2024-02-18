@@ -29,6 +29,9 @@ type SecurityConfig struct {
 type Origin struct {
 	Model
 	URL string `json:"url"`
+
+	SecurityConfig   SecurityConfig
+	SecurityConfigID string
 }
 
 type Role struct {

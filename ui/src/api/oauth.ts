@@ -1,5 +1,10 @@
 import axios from "axios";
 import { SocialState } from "@/api/types";
+import { createAxiosCaller, DEV_ADDR } from "@/api/axios";
+
+const oauthCaller = createAxiosCaller(axios.create({
+  baseURL: `${DEV_ADDR}/console/oauth`
+}))
 
 export type ProviderDTO = {
   provider: string
@@ -7,22 +12,22 @@ export type ProviderDTO = {
   clientSecret: string
 }
 
-export async function apiEnableProvider(appId: string, provider: string) {
-  const res = await axios.put(`/apps/${appId}/oauth/${provider}/enable`)
+export function enableProvider(provider: string) {
+  return oauthCaller.post(`/${provider}`)
 }
 
-export async function apiDisableProvider(appId: string, provider: string) {
-  const res = await axios.delete(`/apps/${appId}/oauth/${provider}/disable`)
+export function disableProvider(provider: string) {
+  return oauthCaller.delete(`/${provider}`)
 }
 
-export async function apiUpdateProviderCredentials(appId: string, credentials: ProviderDTO) {
-  const res = await axios.put(`/apps/${appId}/oauth/${credentials.provider}/update`, {
+export function updateProviderCredentials(credentials: ProviderDTO) {
+  return oauthCaller.put(`/${credentials.provider}`, {
     clientId: credentials.clientId,
     clientSecret: credentials.clientSecret,
   })
 }
 
-export async function getOAuthState(appId: string): Promise<SocialState> {
-  const res = await axios.get(`/apps/${appId}/oauth/providers`)
+export async function getOAuthState(): Promise<SocialState> {
+  const res = await oauthCaller.get(`/providers`)
   return res.data
 }

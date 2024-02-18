@@ -40,12 +40,8 @@ export function AddUserDialog({ open, setOpen }: AddUserDialogProps) {
         </DialogHeader>
         <div className="flex gap-10">
           <div className="w-full">
-            <Label>First Name</Label>
-            <Input onChange={e => updateField("firstName", e)}/>
-          </div>
-          <div className="w-full">
-            <Label>Last Name</Label>
-            <Input onChange={e => updateField("lastName", e)}/>
+            <Label>Username</Label>
+            <Input onChange={e => updateField("username", e)}/>
           </div>
         </div>
         <div>

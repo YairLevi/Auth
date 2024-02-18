@@ -5,6 +5,6 @@ import (
 )
 
 var (
-	db             = database.DB
-	lockoutManager = NewLockoutManager()
+	db = database.DB
+	//lockoutManager = NewLockoutManager()
 )

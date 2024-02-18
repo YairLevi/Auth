@@ -106,12 +106,14 @@ func DisableProviderHandler(ctx echo.Context) error {
 	providerName := ctx.Param("provider")
 	var provider types.OAuthProvider
 	// ignore DELETED_AT.
-	err := db.Where("provider = ?", providerName).First(&provider).Error
+	err := db.Where("name = ?", providerName).First(&provider).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
+		fmt.Println(err)
 		return ctx.JSON(http.StatusInternalServerError, err)
 	}
 
-	if err := db.Delete(&provider).Error; err != nil {
+	if err := db.Where(&provider).Delete(&provider).Error; err != nil {
+		fmt.Println(err)
 		return ctx.JSON(http.StatusInternalServerError, err)
 	}
 
