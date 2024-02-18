@@ -10,6 +10,6 @@ func Encrypt(password string) string {
 	return base64.StdEncoding.EncodeToString(hashedPasswordInBytes[:])
 }
 
-func IsEqual(password, target string) bool {
-	return Encrypt(password) == target
+func IsEqual(password, hashTarget string) bool {
+	return Encrypt(password) == hashTarget
 }

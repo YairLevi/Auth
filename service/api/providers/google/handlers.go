@@ -4,11 +4,9 @@ import (
 	"auth/service/api/providers"
 	"auth/service/database"
 	"auth/service/database/types"
-	auth "auth/service/middleware"
 	"auth/service/session"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 	"io"
@@ -19,22 +17,16 @@ import (
 var db = database.DB
 
 func LoginHandler(ctx echo.Context) error {
-	appID := ctx.(auth.Context).AppID
-	googleOauthConfig, err := providers.GetConfigByAppID(appID, providers.Google)
+	googleOauthConfig, err := providers.GetOAuthConfig(providers.Google)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, err)
 	}
-	url := googleOauthConfig.AuthCodeURL(appID)
+	url := googleOauthConfig.AuthCodeURL("state")
 	return ctx.Redirect(http.StatusTemporaryRedirect, url)
 }
 
 func CallbackHandler(ctx echo.Context) error {
-	appID := ctx.QueryParam("state")
-	if appID == "" {
-		return ctx.JSON(http.StatusBadRequest, "invalid app ID")
-	}
-
-	googleOauthConfig, err := providers.GetConfigByAppID(appID, providers.Google)
+	googleOauthConfig, err := providers.GetOAuthConfig(providers.Google)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, err)
 	}
@@ -64,31 +56,27 @@ func CallbackHandler(ctx echo.Context) error {
 	if err = json.Unmarshal(userInfoBytes, &userInfo); err != nil {
 		return ctx.JSON(http.StatusInternalServerError, err)
 	}
-	fmt.Println("user:", userInfo)
 
 	var user types.User
 	err = db.Where("email = ?", userInfo["email"].(string)).First(&user).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		user.Email = userInfo["email"].(string)
 		user.LastLogin = time.Now()
-		user.FirstName = userInfo["given_name"].(string)
-		user.LastName = userInfo["family_name"].(string)
-		user.AppID = appID
+		user.Username = userInfo["given_name"].(string) + " " + userInfo["family_name"].(string)
 		if err := db.Create(&user).Error; err != nil {
 			return ctx.JSON(http.StatusInternalServerError, err)
 		}
 	} else if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, err)
 	}
-	var app types.App
-	if err := db.Where("id = ?", appID).Find(&app).Error; err != nil {
+	var security types.SecurityConfig
+	if err := db.First(&security).Error; err != nil {
 		return ctx.JSON(http.StatusInternalServerError, "server error signing")
 	}
 	jwtCookie, err := session.GenerateJWT(session.Config{
-		SigningKey: app.SessionKey,
+		SigningKey: security.SessionKey,
 		Expiration: 24 * time.Hour,
 		Payload: session.Payload{
-			AppID:  appID,
 			UserID: user.ID,
 		},
 	})
@@ -99,8 +87,9 @@ func CallbackHandler(ctx echo.Context) error {
 	ctx.SetCookie(&http.Cookie{
 		Name:     session.CookieName,
 		Value:    jwtCookie,
+		Path:     "/",
 		HttpOnly: true,
-		Secure:   false,
+		Secure:   true,
 	})
 	return ctx.Redirect(http.StatusTemporaryRedirect, "http://localhost:3000")
 }

@@ -1,32 +1,19 @@
 import { User } from "@/api/types";
 import axios from "axios";
+import { DEV_ADDR, createAxiosCaller } from "@/api/axios";
 
-export async function getUsers(appId: string): Promise<User[]> {
-  try {
-    const res = await axios.get(`/apps/${appId}/users/`, {
-      headers: {
-        "X-App-ID": appId
-      },
-    })
-    return res.data
-  } catch (e) {
-    return []
-  }
+const usersCaller = createAxiosCaller(axios.create({
+  baseURL: `${DEV_ADDR}/console/users`,
+}))
+
+export async function getUsers(): Promise<User[]> {
+  return usersCaller.get("/").then(res => res.data)
 }
 
-export async function addUser(appId: string, user: Partial<User>) {
-  try {
-    const res = await axios.post(`/apps/${appId}/users/`, user)
-  } catch (e) {
-
-  }
+export async function addUser(user: Partial<User>) {
+  await usersCaller.post("/", user)
 }
 
-export async function deleteUser(appId: string, userId: number) {
-  try {
-    const res = await axios.delete(`/apps/${appId}/users/${userId}`)
-    console.log(res)
-  } catch (e) {
-    console.log(e)
-  }
+export async function deleteUser(userId: string) {
+  await usersCaller.delete(`/${userId}`)
 }

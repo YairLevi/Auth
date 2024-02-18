@@ -11,8 +11,7 @@ export type App = Model & {
 }
 
 export type User = Model & {
-  firstName: string
-  lastName: string
+  username: string
   email: string
   passwordHash: string
   phoneNumber: string
@@ -28,7 +27,7 @@ export type SocialState = {
   }
 }
 
-export type SecuritySettings = {
+export type SecurityConfig = {
   lockoutThreshold: number
   lockoutDuration: number
   allowedOrigins: (Model & { url: string })[]

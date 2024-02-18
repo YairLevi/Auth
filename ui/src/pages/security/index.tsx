@@ -10,29 +10,22 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import {
-  useAddOrigin,
-  useSecuritySettings,
-  useSetLockoutDuration,
-  useSetLockoutThreshold,
-  useSetSessionKey
-} from "@/pages/security/api";
+import { useSecurityConfig } from "@/pages/security/queries";
 
 
 function LockoutDuration() {
-  const { data: settings } = useSecuritySettings()
-  const { mutate: setDuration } = useSetLockoutDuration()
+  const { securityConfig, setLockoutDuration } = useSecurityConfig()
   const [edit, setEdit] = useState(false)
   const ref = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (ref.current) {
-      ref.current.value = `${settings.lockoutDuration}`
+      ref.current.value = `${securityConfig.lockoutDuration}`
     }
   }, []);
 
   function save() {
-    setDuration(parseInt(ref.current.value))
+    setLockoutDuration(parseInt(ref.current.value))
     setEdit(false)
   }
 
@@ -64,19 +57,18 @@ function LockoutDuration() {
 }
 
 function LockoutThreshold() {
-  const { data: settings } = useSecuritySettings()
-  const { mutate: setThreshold } = useSetLockoutThreshold()
+  const { securityConfig, setLockoutThreshold } = useSecurityConfig()
   const [edit, setEdit] = useState(false)
   const ref = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (ref.current) {
-      ref.current.value = `${settings.lockoutThreshold}`
+      ref.current.value = `${securityConfig.lockoutThreshold}`
     }
   }, []);
 
   function save() {
-    setThreshold(parseInt(ref.current.value))
+    setLockoutThreshold(parseInt(ref.current.value))
     setEdit(false)
   }
 
@@ -107,9 +99,8 @@ function AllowedOrigins() {
   const originRef = useRef<HTMLInputElement>()
   const [open, setOpen] = useState(false)
 
-  const { data: settings } = useSecuritySettings()
-  const { mutate: addOrigin } = useAddOrigin()
-
+  const { securityConfig, addOrigin } = useSecurityConfig()
+console.log(securityConfig)
   function onClickAdd() {
     addOrigin(originRef.current.value)
     setOpen(false)
@@ -126,7 +117,13 @@ function AllowedOrigins() {
           Currently allowed origins:
         </p>
         {
-          settings.allowedOrigins?.map(org => <p key={org.id} className="text-sm my-2 text-muted-foreground">{org.url}</p>)
+          securityConfig.allowedOrigins?.map(org =>
+            <p key={org.id} className="text-sm my-2 text-muted-foreground">{org.url}</p>
+          )
+        }
+        {
+          securityConfig.allowedOrigins?.length == 0 &&
+            <p className="text-sm my-2 text-muted-foreground">None</p>
         }
         <Button
           className="mt-2 w-full"
@@ -161,7 +158,7 @@ function TokenCustomization() {
   const [open, setOpen] = useState(false)
   const keyRef = useRef<HTMLInputElement>(null)
 
-  const { mutate: setSessionKey } = useSetSessionKey()
+  const { setSessionKey } = useSecurityConfig()
 
   function onclick() {
     setSessionKey(keyRef.current.value)
@@ -209,9 +206,9 @@ function TokenCustomization() {
 }
 
 export function Security() {
-  const { data: settings } = useSecuritySettings()
+  const { securityConfig } = useSecurityConfig()
 
-  return settings != null && (
+  return !!securityConfig && (
     <div className="mx-auto max-w-3xl">
       <LockoutThreshold/>
       <LockoutDuration/>

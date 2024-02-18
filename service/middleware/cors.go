@@ -16,9 +16,8 @@ const (
 func DynamicCORS(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		origin := c.Request().Header.Get("Origin")
-		appID := c.Request().Header.Get(ApplicationHeader)
 		var allowed types.Origin
-		err := database.DB.Where(&types.Origin{URL: origin, AppID: appID}).First(&allowed).Error
+		err := database.DB.Where(&types.Origin{URL: origin}).First(&allowed).Error
 		isOriginAllowed := err == nil
 
 		// If the origin is allowed, set the CORS headers

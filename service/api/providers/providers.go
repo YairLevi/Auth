@@ -12,9 +12,9 @@ const (
 
 var db = database.DB
 
-func GetConfigByAppID(appID string, provider string) (*types.OAuthConfig, error) {
+func GetOAuthConfig(providerName string) (*types.OAuthConfig, error) {
 	var oauthConfig types.OAuthProvider
-	if err := db.Where("app_id = ? AND provider = ?", appID, provider).First(&oauthConfig).Error; err != nil {
+	if err := db.Unscoped().Where("name = ?", providerName).First(&oauthConfig).Error; err != nil {
 		return nil, err
 	}
 	return &oauthConfig.Config, nil

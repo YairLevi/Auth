@@ -1,62 +1,44 @@
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { useParams } from "react-router";
-import { useState } from "react";
-import {
-  apiEnableProvider,
-  apiDisableProvider,
-  getOAuthState,
-  ProviderDTO,
-  apiUpdateProviderCredentials
-} from "@/api/oauth";
+import * as api from "@/api/oauth";
 import { SocialState } from "@/api/types"
 
-const GET_OAUTH_STATE = "get-oauth-state"
-const ENABLE_PROVIDER = "enable-provider"
-const DISABLE_PROVIDER = "disable-provider"
-const UPDATE_PROVIDER = "update-provider"
+const keys = {
+  getOAuthState: "get-oauth-state",
+  enableProvider: "enable-provider",
+  disableProvider: "disable-provider",
+  updateProvider: "update-provider",
+}
 
 export function useSocial(): {
   oauthState: SocialState
   enableProvider: (providerName: string) => void
   disableProvider: (providerName: string) => void
-  updateProvider: (dto: ProviderDTO) => void
+  updateProvider: (dto: api.ProviderDTO) => void
 } {
-  const { appId } = useParams()
-  const [oauthState, setOAuthState] = useState<SocialState>({})
   const client = useQueryClient()
 
-  useQuery<SocialState>({
-    queryKey: [GET_OAUTH_STATE, appId],
-    queryFn: () => getOAuthState(appId),
-    onSuccess: data => setOAuthState(data)
+  const { data: oauthState } = useQuery<SocialState>({
+    queryKey: [keys.getOAuthState],
+    queryFn: () => api.getOAuthState(),
+    initialData: {}
   })
 
   const { mutate: enableProvider } = useMutation({
-    mutationKey: [ENABLE_PROVIDER, appId],
-    mutationFn: (providerName: string) => apiEnableProvider(appId, providerName),
-    onSuccess: () => {
-      client.invalidateQueries([GET_OAUTH_STATE, appId])
-    },
-    onError: err => {
-      console.log(err)
-    },
+    mutationKey: [keys.enableProvider],
+    mutationFn: (providerName: string) => api.enableProvider(providerName),
+    onSuccess: () => client.invalidateQueries([keys.getOAuthState]),
   })
 
   const { mutate: disableProvider } = useMutation({
-    mutationKey: [DISABLE_PROVIDER, appId],
-    mutationFn: (providerName: string) => apiDisableProvider(appId, providerName),
-    onSuccess: () => {
-      client.invalidateQueries([GET_OAUTH_STATE, appId])
-    },
-    onError: err => {
-      console.log(err)
-    },
+    mutationKey: [keys.disableProvider],
+    mutationFn: (providerName: string) => api.disableProvider(providerName),
+    onSuccess: () => client.invalidateQueries([keys.getOAuthState]),
   })
 
   const { mutate: updateProvider } = useMutation({
-    mutationKey: [UPDATE_PROVIDER, appId],
-    mutationFn: (dto: ProviderDTO) => apiUpdateProviderCredentials(appId, dto),
-    onSuccess: () => client.invalidateQueries([GET_OAUTH_STATE, appId]),
+    mutationKey: [keys.updateProvider],
+    mutationFn: (dto: api.ProviderDTO) => api.updateProviderCredentials(dto),
+    onSuccess: () => client.invalidateQueries([keys.getOAuthState]),
     onError: () => {}
   })
 

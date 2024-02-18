@@ -74,34 +74,19 @@ export const columns: ColumnDef<User>[] = [
     ),
   },
   {
-    accessorKey: "firstName",
+    accessorKey: "username",
     header: ({ column }) => {
       return (
         <span
           className="min-w-[7rem] max-w-[10rem] flex cursor-pointer select-none hover:text-black"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          First Name
+          Username
           <ArrowUpDown className="ml-2 h-4 w-4"/>
         </span>
       )
     },
-    cell: ({ row }) => <p>{row.getValue("firstName")}</p>
-  },
-  {
-    accessorKey: "lastName",
-    header: ({ column }) => {
-      return (
-        <span
-          className="min-w-[7rem] max-w-[10rem] flex cursor-pointer select-none hover:text-black"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Last Name
-          <ArrowUpDown className="ml-2 h-4 w-4"/>
-        </span>
-      )
-    },
-    cell: ({ row }) => <p>{row.getValue("lastName")}</p>
+    cell: ({ row }) => <p>{row.getValue("username")}</p>
   },
   {
     accessorKey: "createdAt",
@@ -116,7 +101,9 @@ export const columns: ColumnDef<User>[] = [
         </span>
       )
     },
-    cell: ({ row }) => <p>{row.getValue<Date>("createdAt").toLocaleDateString()}</p>
+    cell: ({ row }) => {
+      return <p>{row.getValue<Date>("createdAt")?.toLocaleDateString()}</p>
+    }
   },
 
   {
@@ -150,8 +137,7 @@ export function UserTable({ appId }: UserTableProps) {
   useEffect(() => {
     setSearchParams({
       email: "",
-      firstName: "",
-      lastName: "",
+      username: "",
       createdAt: "",
     })
   }, []);
@@ -160,6 +146,7 @@ export function UserTable({ appId }: UserTableProps) {
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
   const { users, removeUser } = useUsers()
+console.log(users)
 
   const table = useReactTable({
     data: users,
@@ -179,7 +166,6 @@ export function UserTable({ appId }: UserTableProps) {
       rowSelection,
     },
   })
-
   return (
     <div className="w-full">
       <div className="flex items-center py-4 gap-4">
