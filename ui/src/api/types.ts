@@ -5,11 +5,6 @@ export type Model = {
   deletedAt: Date
 }
 
-export type App = Model & {
-  name: string
-  allowedOrigins: []
-}
-
 export type User = Model & {
   username: string
   email: string
@@ -31,4 +26,9 @@ export type SecurityConfig = {
   lockoutThreshold: number
   lockoutDuration: number
   allowedOrigins: (Model & { url: string })[]
+}
+
+export type Role = Model & {
+  name: string,
+  UserRoles: any[]
 }
