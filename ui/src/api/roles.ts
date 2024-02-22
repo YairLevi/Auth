@@ -16,15 +16,3 @@ export function addRole(name: string) {
 export function deleteRole(name: string) {
   return rolesCaller.delete(`/${name}`)
 }
-
-export function getUserRoles(userId: string) {
-  return rolesCaller.get(`/users/${userId}`)
-}
-
-export function assignRoleToUser(userId: string, role: string) {
-  return rolesCaller.post(`/users/${userId}`, { role })
-}
-
-export function revokeRoleFromUser(userId: string, role: string) {
-  return rolesCaller.delete(`/users/${userId}`, { data: { role }})
-}
