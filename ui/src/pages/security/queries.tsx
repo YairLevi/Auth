@@ -7,7 +7,8 @@ const keys = {
   setLockoutDuration: "set-lockout-duration",
   setLockoutThreshold: "set-lockout-threshold",
   setSessionKey: "set-session-key",
-  addOrigin: "add-origin"
+  addOrigin: "add-origin",
+  removeOrigin: "remove-origin",
 }
 
 export function useSecurityConfig() {
@@ -42,11 +43,18 @@ export function useSecurityConfig() {
     onSuccess: () => client.invalidateQueries([keys.getSecurityConfig])
   })
 
+  const { mutate: removeOrigin } = useMutation({
+    mutationKey: [keys.removeOrigin],
+    mutationFn: api.removeOrigin,
+    onSuccess: () => client.invalidateQueries([keys.getSecurityConfig])
+  })
+
   return {
     setLockoutDuration,
     setLockoutThreshold,
     setSessionKey,
     addOrigin,
     securityConfig,
+    removeOrigin
   }
 }

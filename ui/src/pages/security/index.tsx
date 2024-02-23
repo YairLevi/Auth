@@ -1,6 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
+import { X } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -11,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { useSecurityConfig } from "@/pages/security/queries";
+import { Model } from "@/api/types";
 
 
 function LockoutDuration() {
@@ -95,12 +97,26 @@ function LockoutThreshold() {
   )
 }
 
+function OriginTab({ origin }: { origin: Model & { url: string } }) {
+  const { removeOrigin } = useSecurityConfig()
+  return (
+    <div className="flex justify-between items-center py-1">
+      <p key={origin.id} className="text-sm font-semibold my-2 text-muted-foreground">{origin.url}</p>
+      <X
+        size={26}
+        className="p-1 mr-4 hover:bg-gray-100 transition-colors rounded-md"
+        onClick={() => removeOrigin(origin.id)}
+      />
+    </div>
+  )
+}
+
 function AllowedOrigins() {
   const originRef = useRef<HTMLInputElement>()
   const [open, setOpen] = useState(false)
 
   const { securityConfig, addOrigin } = useSecurityConfig()
-console.log(securityConfig)
+
   function onClickAdd() {
     addOrigin(originRef.current.value)
     setOpen(false)
@@ -116,15 +132,19 @@ console.log(securityConfig)
         <p className="text-sm font-semibold text-muted-foreground">
           Currently allowed origins:
         </p>
-        {
-          securityConfig.allowedOrigins?.map(org =>
-            <p key={org.id} className="text-sm my-2 text-muted-foreground">{org.url}</p>
-          )
-        }
-        {
-          securityConfig.allowedOrigins?.length == 0 &&
-            <p className="text-sm my-2 text-muted-foreground">None</p>
-        }
+        <div className="h-28 overflow-auto">
+          {
+            securityConfig.allowedOrigins?.map(org => (
+              <>
+                <OriginTab origin={org} key={org.id}/>
+              </>
+            ))
+          }
+          {
+            securityConfig.allowedOrigins?.length == 0 &&
+              <p className="text-sm my-2 text-muted-foreground py-5 text-center">No allowed origins are set.</p>
+          }
+        </div>
         <Button
           className="mt-2 w-full"
           variant="outline"
