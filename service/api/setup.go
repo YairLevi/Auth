@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func setupServiceApiEndpoints(router *echo.Group) {
+func setupBasicAuthEndpoints(router *echo.Group) {
 	router.POST("/register", standard.RegisterHandler)
 	router.POST("/login", standard.EmailPasswordLoginHandler)
 	router.GET("/login", standard.CookieLoginHandler)
@@ -26,17 +26,22 @@ func setupGithubAuthRoutes(router *echo.Group) {
 }
 
 func setupRolesRoutes(router *echo.Group) {
+	router.GET("/", roles.GetRoles)
 	router.POST("/", roles.AddRole)
-	router.DELETE("/", roles.DeleteRole)
-	router.GET("/:userId", roles.GetRoles)
-	router.PUT("/:userId", roles.AssignRoleToUser)
-	router.DELETE("/:userId", roles.RevokeRoleFromUser)
+	router.DELETE("/:role", roles.DeleteRole)
+}
+
+func setupUsersRoutes(router *echo.Group) {
+	router.GET("/:userId/roles", roles.GetUserRoles)
+	router.POST("/:userId/roles", roles.AssignRoleToUser)
+	router.DELETE("/:userId/roles/:role", roles.RevokeRoleFromUser)
 }
 
 func SetupEndpoints(server *echo.Echo) {
 	apiV1 := server.Group("/api")
-	setupServiceApiEndpoints(apiV1.Group("/"))
+	setupBasicAuthEndpoints(apiV1.Group("/"))
 	setupGoogleAuthRoutes(apiV1.Group("/google"))
 	setupGithubAuthRoutes(apiV1.Group("/github"))
 	setupRolesRoutes(apiV1.Group("/roles"))
+	setupUsersRoutes(apiV1.Group("/users"))
 }

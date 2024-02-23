@@ -9,6 +9,40 @@ import (
 )
 
 func GetRoles(ctx echo.Context) error {
+	var roles []types.Role
+	if err := database.DB.Preload("UserRoles").Find(&roles).Error; err != nil {
+		return ctx.JSON(http.StatusInternalServerError, err)
+	}
+	return ctx.JSON(http.StatusOK, &roles)
+}
+
+func AddRole(ctx echo.Context) error {
+	role := types.Role{}
+	if err := ctx.Bind(&role); err != nil {
+		return ctx.JSON(http.StatusBadRequest, "error in payload")
+	}
+
+	if err := database.DB.Create(&role).Error; err != nil {
+		return ctx.JSON(http.StatusInternalServerError, "error adding role")
+	}
+
+	return ctx.JSON(http.StatusOK, &role)
+}
+
+func DeleteRole(ctx echo.Context) error {
+	roleName := ctx.Param("role")
+	role := types.Role{
+		Name: roleName,
+	}
+	if err := database.DB.Unscoped().Where(&role).Delete(&role).Error; err != nil {
+		fmt.Println(err)
+		return ctx.JSON(http.StatusInternalServerError, "error deleting")
+	}
+
+	return ctx.NoContent(http.StatusNoContent)
+}
+
+func GetUserRoles(ctx echo.Context) error {
 	userID := ctx.Param("userId")
 
 	var userRoles []types.UserRole
@@ -33,38 +67,6 @@ func GetRoles(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusOK, roleNames)
-}
-
-func AddRole(ctx echo.Context) error {
-	role := types.Role{}
-	if err := ctx.Bind(&role); err != nil {
-		return ctx.JSON(http.StatusBadRequest, "error in payload")
-	}
-
-	if err := database.DB.Create(&role).Error; err != nil {
-		return ctx.JSON(http.StatusInternalServerError, "error adding role")
-	}
-
-	return ctx.JSON(http.StatusOK, &role)
-}
-
-func DeleteRole(ctx echo.Context) error {
-	dto := struct {
-		Name string `json:"name"`
-	}{}
-	if err := ctx.Bind(&dto); err != nil {
-		return ctx.JSON(http.StatusBadRequest, "error in payload")
-	}
-
-	role := types.Role{
-		Name: dto.Name,
-	}
-	if err := database.DB.Unscoped().Where(&role).Delete(&role).Error; err != nil {
-		fmt.Println(err)
-		return ctx.JSON(http.StatusInternalServerError, "error deleting")
-	}
-
-	return ctx.NoContent(http.StatusNoContent)
 }
 
 func AssignRoleToUser(ctx echo.Context) error {
@@ -118,7 +120,7 @@ func RevokeRoleFromUser(ctx echo.Context) error {
 		UserID: userID,
 	}
 
-	if err := database.DB.Delete(&userRole).Error; err != nil {
+	if err := database.DB.Unscoped().Where(&userRole).Delete(&userRole).Error; err != nil {
 		fmt.Println(err)
 		return ctx.JSON(http.StatusBadRequest, fmt.Sprint("failed to revoke role", role.Name, "from user."))
 	}

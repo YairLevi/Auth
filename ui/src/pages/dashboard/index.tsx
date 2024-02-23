@@ -3,9 +3,11 @@ import { Users, UsersProvider } from "@/pages/users";
 import { SocialConnections } from "@/pages/social";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { DoorOpen, KeyRound, LockIcon, LucideIcon, UsersIcon } from "lucide-react";
+import { ContactIcon, DoorOpen, FileClockIcon, KeyRound, LockIcon, LucideIcon, UsersIcon } from "lucide-react";
 import { Security } from "@/pages/security";
 import { ReactNode } from "react";
+import { Roles } from "@/pages/roles";
+import { Logs } from "@/pages/logs";
 
 type SidebarItemProps = {
   text: string
@@ -43,6 +45,18 @@ const routes: Route[] = [
     path: "security",
     element: <Security/>
   },
+  {
+    name: "Roles",
+    icon: ContactIcon,
+    path: "roles",
+    element: <Roles/>
+  },
+  {
+    name: "Logs",
+    icon: FileClockIcon,
+    path: "logs",
+    element: <Logs/>
+  }
 ]
 
 function SidebarItem({ text, path, Icon }: SidebarItemProps) {
