@@ -9,10 +9,22 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
 import * as React from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
+import { useRef, useState } from "react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 export function Roles() {
-  const { getRoles, deleteRole } = useRoles()
-
+  const { getRoles, deleteRole, addRole } = useRoles()
+  const [open, setOpen] = useState(false)
+  const roleTitleRef = useRef<HTMLInputElement>(null)
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -20,7 +32,7 @@ export function Roles() {
         <h1 className="text-xl font-semibold">Roles</h1>
         <p>Define and assign roles for users, to allow protection of resources.</p>
       </header>
-      <p className="text-muted-foreground text-sm text-center mb-3">A list of your existing roles.</p>
+      <Button className="mb-4" onClick={() => setOpen(true)}>Add Role</Button>
       <Table className="rounded-md border border-separate">
         <TableHeader>
           <TableRow>
@@ -58,6 +70,27 @@ export function Roles() {
           ))}
         </TableBody>
       </Table>
+      <p className="text-muted-foreground text-sm text-center mt-3">A list of your existing roles.</p>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>New Role</DialogTitle>
+          </DialogHeader>
+          <div>
+            <Label>Name</Label>
+            <Input ref={roleTitleRef}/>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => {
+              addRole.mutate(roleTitleRef.current.value)
+              setOpen(false)
+            }}>
+              Add
+              </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
