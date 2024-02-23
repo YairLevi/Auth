@@ -15,6 +15,7 @@ func setupSecurityEndpoints(router *echo.Group) {
 	router.PUT("/lockout/duration", handlers.SetLockoutDurationHandler)
 	router.PUT("/origins", handlers.AddOriginHandler)
 	router.PUT("/session", handlers.SetSessionKeyHandler)
+	router.DELETE("/origins/:originId", handlers.RemoveOriginHandler)
 }
 
 func setupUsersEndpoints(router *echo.Group) {

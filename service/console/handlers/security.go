@@ -114,3 +114,11 @@ func AddOriginHandler(ctx echo.Context) error {
 	}
 	return ctx.NoContent(http.StatusCreated)
 }
+
+func RemoveOriginHandler(ctx echo.Context) error {
+	originID := ctx.Param("originId")
+	if err := db.Where("id = ?", originID).Delete(&types.Origin{}).Error; err != nil {
+		return ctx.JSON(http.StatusInternalServerError, err)
+	}
+	return ctx.NoContent(http.StatusOK)
+}

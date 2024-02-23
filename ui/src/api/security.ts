@@ -24,3 +24,7 @@ export function setSessionKey(sessionKey: string) {
 export function addOrigin(origin: string) {
   return securityCaller.put("/origins", { origin })
 }
+
+export function removeOrigin(originId: string) {
+  return securityCaller.delete(`/origins/${originId}`)
+}
