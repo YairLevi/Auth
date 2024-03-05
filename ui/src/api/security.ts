@@ -28,3 +28,11 @@ export function addOrigin(origin: string) {
 export function removeOrigin(originId: string) {
   return securityCaller.delete(`/origins/${originId}`)
 }
+
+export function addEmailFilter(args: { email: string, isWhitelist: boolean }) {
+  return securityCaller.post("/emails", args)
+}
+
+export function removeEmailFilter(emailId: string) {
+  return securityCaller.delete(`/emails/${emailId}`)
+}

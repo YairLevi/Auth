@@ -9,6 +9,8 @@ const keys = {
   setSessionKey: "set-session-key",
   addOrigin: "add-origin",
   removeOrigin: "remove-origin",
+  addEmailFilter: "add-email-filter",
+  removeEmailFilter: "remove-email-filter",
 }
 
 export function useSecurityConfig() {
@@ -49,12 +51,26 @@ export function useSecurityConfig() {
     onSuccess: () => client.invalidateQueries([keys.getSecurityConfig])
   })
 
+  const { mutate: addEmailFilter } = useMutation({
+    mutationKey: [keys.addEmailFilter],
+    mutationFn: api.addEmailFilter,
+    onSuccess: () => client.invalidateQueries([keys.getSecurityConfig])
+  })
+
+  const { mutate: removeEmailFilter } = useMutation({
+    mutationKey: [keys.removeEmailFilter],
+    mutationFn: api.removeEmailFilter,
+    onSuccess: () => client.invalidateQueries([keys.getSecurityConfig])
+  })
+
   return {
     setLockoutDuration,
     setLockoutThreshold,
     setSessionKey,
     addOrigin,
     securityConfig,
-    removeOrigin
+    removeOrigin,
+    addEmailFilter,
+    removeEmailFilter
   }
 }

@@ -24,13 +24,18 @@ func copyFields(originalPtr interface{}, partialPtr interface{}) {
 
 func GetSecuritySettingsHandler(ctx echo.Context) error {
 	dto := struct {
-		Origins          []types.Origin `json:"allowedOrigins"`
-		LockoutThreshold int            `json:"lockoutThreshold"`
-		LockoutDuration  int            `json:"lockoutDuration"`
+		Origins          []types.Origin      `json:"allowedOrigins"`
+		LockoutThreshold int                 `json:"lockoutThreshold"`
+		LockoutDuration  int                 `json:"lockoutDuration"`
+		EmailFilters     []types.EmailFilter `json:"emailFilters"`
 	}{}
 
 	var security types.SecurityConfig
-	err := db.Preload("Origins").First(&security).Error
+	err := db.
+		Preload("Origins").
+		Preload("EmailFilters").
+		First(&security).
+		Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		db.Create(&security)
 	} else if err != nil {
@@ -119,6 +124,30 @@ func RemoveOriginHandler(ctx echo.Context) error {
 	originID := ctx.Param("originId")
 	if err := db.Where("id = ?", originID).Delete(&types.Origin{}).Error; err != nil {
 		return ctx.JSON(http.StatusInternalServerError, err)
+	}
+	return ctx.NoContent(http.StatusOK)
+}
+
+func AddEmailFilterHandler(ctx echo.Context) error {
+	dto := types.EmailFilter{}
+	if err := ctx.Bind(&dto); err != nil {
+		return ctx.JSON(http.StatusBadRequest, err)
+	}
+	var security types.SecurityConfig
+	if err := db.First(&security).Error; err != nil {
+		return ctx.JSON(http.StatusInternalServerError, err.Error())
+	}
+	security.EmailFilters = append(security.EmailFilters, dto)
+	if err := db.Save(&security).Error; err != nil {
+		return ctx.JSON(http.StatusInternalServerError, err.Error())
+	}
+	return ctx.NoContent(http.StatusOK)
+}
+
+func RemoveEmailFilterHandler(ctx echo.Context) error {
+	emailID := ctx.Param("emailId")
+	if err := db.Where("id = ?", emailID).Delete(&types.EmailFilter{}).Error; err != nil {
+		return ctx.JSON(http.StatusInternalServerError, err.Error())
 	}
 	return ctx.NoContent(http.StatusOK)
 }

@@ -16,6 +16,8 @@ func setupSecurityEndpoints(router *echo.Group) {
 	router.PUT("/origins", handlers.AddOriginHandler)
 	router.PUT("/session", handlers.SetSessionKeyHandler)
 	router.DELETE("/origins/:originId", handlers.RemoveOriginHandler)
+	router.POST("/emails", handlers.AddEmailFilterHandler)
+	router.DELETE("/emails/:emailId", handlers.RemoveEmailFilterHandler)
 }
 
 func setupUsersEndpoints(router *echo.Group) {

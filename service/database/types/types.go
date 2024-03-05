@@ -18,12 +18,22 @@ type User struct {
 	UserRoles []UserRole `gorm:"constraint:OnDelete:CASCADE"`
 }
 
+type EmailFilter struct {
+	Model
+	Email       string `json:"email"`
+	IsWhitelist bool   `json:"isWhitelist"`
+
+	SecurityConfig   SecurityConfig
+	SecurityConfigID string
+}
+
 type SecurityConfig struct {
 	Model
-	Origins          []Origin `json:"origins"`
-	LockoutThreshold int      `json:"lockoutThreshold" gorm:"default:5"`
-	LockoutDuration  int      `json:"lockoutDuration" gorm:"default:30"`
-	SessionKey       string   `json:"sessionKey" gorm:"default:'session key'"`
+	Origins          []Origin      `json:"origins"`
+	LockoutThreshold int           `json:"lockoutThreshold" gorm:"default:5"`
+	LockoutDuration  int           `json:"lockoutDuration" gorm:"default:30"`
+	SessionKey       string        `json:"sessionKey" gorm:"default:'session key'"`
+	EmailFilters     []EmailFilter `json:"emailFilters"`
 }
 
 type Origin struct {

@@ -1,7 +1,8 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import * as React from "react";
 import { useEffect, useRef, useState } from "react";
-import { X } from 'lucide-react'
+import { ChevronDown, Trash, X } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -13,6 +14,9 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useSecurityConfig } from "@/pages/security/queries";
 import { Model } from "@/api/types";
+import { cn } from "@/lib/utils";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Label } from "@/components/ui/label";
 
 
 function LockoutDuration() {
@@ -225,6 +229,95 @@ function TokenCustomization() {
   )
 }
 
+function EmailFilters() {
+  const { securityConfig, addEmailFilter, removeEmailFilter } = useSecurityConfig()
+  const [open, setOpen] = useState(false)
+  const [openAdd, setOpenAdd] = useState(false)
+  const emailRef = useRef<HTMLInputElement>(null)
+  const [isWhitelist, setIsWhitelist] = useState(false)
+
+  function add() {
+    const email = emailRef.current.value
+    addEmailFilter({ email, isWhitelist })
+    setOpenAdd(false)
+  }
+  const emailFilters = securityConfig.emailFilters || []
+
+  return (
+    <div className="overflow-hidden mb-20">
+      <div className="flex justify-between items-center gap-3">
+        <div>
+          <h1 className="font-semibold">Allow or Deny Email Patterns</h1>
+          <p className="text-sm">Email filters to allow only specific addresses, or deny some.</p>
+          <p className="text-xs text-muted-foreground"> Notice that, if you provide at least one whitelisted address, the service will deny all other emails that do not comply with the allowed patterns.</p>
+        </div>
+        <div className="flex gap-4 items-center">
+          <Button onClick={() => setOpenAdd(true)}>
+            Add Email
+          </Button>
+          <ChevronDown
+            className={cn(
+              "mr-4 transition-all duration-200",
+              open ? "rotate-180" : ""
+            )}
+            size={28}
+            onClick={() => setOpen(!open)}
+          />
+        </div>
+      </div>
+      <div className={cn("mt-5 transition-transform duration-300", open ? "h-fit" : "h-0")}>
+        <Table className="rounded-md border border-separate">
+          <TableHeader className="sticky top-0">
+            <TableRow>
+              <TableHead>Pattern</TableHead>
+              <TableHead>Allow Status</TableHead>
+              <TableHead>Created At</TableHead>
+              <TableHead className="w-[2rem] max-w-[2rem]"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody className="overflow-auto">
+            {!!emailFilters && emailFilters.map(email => (
+              <TableRow key={email.id}>
+                <TableCell>{email.email}</TableCell>
+                <TableCell>{email.isWhitelist ? 'whitelist' : 'denied'}</TableCell>
+                <TableCell>{email.createdAt.toLocaleDateString()}</TableCell>
+                <TableCell>
+                  <Trash size={24}
+                         className="p-1 hover:bg-gray-100 rounded-md"
+                         onClick={() => removeEmailFilter(email.id)}/>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <Dialog open={openAdd} onOpenChange={setOpenAdd}>
+        <DialogContent className="w-fit">
+          <DialogHeader>
+            <DialogTitle>
+              Allow New Origin
+            </DialogTitle>
+            <DialogDescription>
+              Allow another origin to make auth requests to your server.
+            </DialogDescription>
+          </DialogHeader>
+          <Input ref={emailRef}/>
+          <div className="flex gap-2 items-center w-fit">
+            <Input type='radio' radioGroup="emails" id="whitelist" checked={isWhitelist} onChange={e => setIsWhitelist(true)}/>
+            <Label htmlFor="whitelist" className="mr-4">Whitelist</Label>
+            <Input type='radio' radioGroup="emails" id="blacklist" checked={!isWhitelist} onChange={e => setIsWhitelist(false)}/>
+            <Label htmlFor="blacklist">Blacklist</Label>
+          </div>
+          <DialogFooter>
+            <Button onClick={add}>Add</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
+
 export function Security() {
   const { securityConfig } = useSecurityConfig()
 
@@ -233,6 +326,8 @@ export function Security() {
       <LockoutThreshold/>
       <LockoutDuration/>
       <AllowedOrigins/>
+      <Separator className="w-full mb-14"/>
+      <EmailFilters/>
       <Separator className="w-full mb-14"/>
       <TokenCustomization/>
     </div>

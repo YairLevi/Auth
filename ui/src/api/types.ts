@@ -26,9 +26,15 @@ export type SecurityConfig = {
   lockoutThreshold: number
   lockoutDuration: number
   allowedOrigins: (Model & { url: string })[]
+  emailFilters: EmailFilter[]
 }
 
 export type Role = Model & {
   name: string,
   UserRoles: any[]
+}
+
+export type EmailFilter = Model & {
+  email: string
+  isWhitelist: boolean
 }
