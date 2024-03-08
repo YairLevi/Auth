@@ -4,6 +4,7 @@ import (
 	"auth/service/database/types"
 	"auth/service/session"
 	"auth/service/tools/password"
+	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -37,29 +38,19 @@ func EmailPasswordLoginHandler(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, err)
 	}
 
-	//appGuard := lockoutManager.AppGuards[appID]
-	//if appGuard != nil {
-	//	if appGuard.IsLocked(loginDTO.Email) {
-	//		return ctx.JSON(
-	//			http.StatusForbidden,
-	//			fmt.Sprintf(
-	//				"this email is in lockout state. it will be released in %.1f seconds.",
-	//				appGuard.Duration.Seconds(),
-	//			),
-	//		)
-	//	}
-	//} else {
-	//	fmt.Println("lockout guard is nil")
-	//}
-
+	if IsLocked(loginDTO.Email) {
+		return ctx.JSON(http.StatusForbidden, fmt.Sprintf("in lockout state for a few seconds."))
+	}
 	var user types.User
 	if err := db.Where("email = ?", loginDTO.Email).First(&user).Error; err != nil {
 		return ctx.JSON(http.StatusUnauthorized, "unauthorized")
 	}
 
-	if password.IsEqual(loginDTO.Password, user.PasswordHash) {
+	if !password.IsEqual(loginDTO.Password, user.PasswordHash) {
+		Fail(loginDTO.Email)
 		return ctx.JSON(http.StatusUnauthorized, "unauthorized")
 	}
+	Succeed(loginDTO.Email)
 
 	var security types.SecurityConfig
 	if err := db.First(&security).Error; err != nil {

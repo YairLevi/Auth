@@ -89,6 +89,20 @@ export const columns: ColumnDef<User>[] = [
     cell: ({ row }) => <p>{row.getValue("username")}</p>
   },
   {
+    accessorKey: "phoneNumber",
+    header: ({ column }) => {
+      return (
+        <span
+          className="min-w-[7rem] max-w-[10rem] flex cursor-pointer select-none hover:text-black"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Phone Number
+          <ArrowUpDown className="ml-2 h-4 w-4"/>
+        </span>
+      )
+    }
+  },
+  {
     accessorKey: "createdAt",
     header: ({ column }) => {
       return (
@@ -139,6 +153,7 @@ export function UserTable({ appId }: UserTableProps) {
       email: "",
       username: "",
       createdAt: "",
+      phoneNumber: "",
     })
   }, []);
   const [sorting, setSorting] = React.useState<SortingState>([])
@@ -146,7 +161,6 @@ export function UserTable({ appId }: UserTableProps) {
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
   const { users, removeUser } = useUsers()
-console.log(users)
 
   const table = useReactTable({
     data: users,
