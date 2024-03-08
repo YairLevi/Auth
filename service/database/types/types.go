@@ -27,6 +27,13 @@ type EmailFilter struct {
 	SecurityConfigID string
 }
 
+type Lockout struct {
+	Model
+	Email       string    `json:"email"`
+	LastLockout time.Time `json:"lastLockout"`
+	Attempts    int       `json:"attempts"`
+}
+
 type SecurityConfig struct {
 	Model
 	Origins          []Origin      `json:"origins"`

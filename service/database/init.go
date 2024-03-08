@@ -30,6 +30,7 @@ func init() {
 		&types.Role{},
 		&types.UserRole{},
 		&types.EmailFilter{},
+		&types.Lockout{},
 	)
 	if err != nil {
 		panic(fmt.Sprint("GORM failed to migrate types to proper SQL tables."))
