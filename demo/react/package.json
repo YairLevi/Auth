@@ -10,13 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@types/gapi": "^0.0.47",
-    "axios": "^1.6.2",
-    "date-fns": "^3.0.6",
-    "gapi-script": "^1.2.0",
+    "auth-ts-sdk": "^0.1.1",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-google-login": "^5.2.2"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",

@@ -72,6 +72,7 @@ func EmailPasswordLoginHandler(ctx echo.Context) error {
 		Name:     session.CookieName,
 		Value:    jwtCookie,
 		Expires:  time.Now().Add(time.Hour * 24),
+		Path:     "/",
 		HttpOnly: true,
 		Secure:   true,
 	})
@@ -122,6 +123,7 @@ func LogoutHandler(ctx echo.Context) error {
 
 	ctx.SetCookie(&http.Cookie{
 		Name:   session.CookieName,
+		Path:   "/",
 		MaxAge: 0,
 	})
 	return ctx.NoContent(http.StatusOK)

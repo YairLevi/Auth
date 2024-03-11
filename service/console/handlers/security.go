@@ -2,10 +2,8 @@ package handlers
 
 import (
 	"auth/service/database/types"
-	"errors"
 	"fmt"
 	"github.com/labstack/echo/v4"
-	"gorm.io/gorm"
 	"net/http"
 	"reflect"
 )
@@ -36,9 +34,9 @@ func GetSecuritySettingsHandler(ctx echo.Context) error {
 		Preload("EmailFilters").
 		First(&security).
 		Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		db.Create(&security)
-	} else if err != nil {
+		/*if errors.Is(err, gorm.ErrRecordNotFound) {
+			db.Create(&security)
+		} else */if err != nil {
 		return ctx.JSON(http.StatusBadRequest, "invalid request")
 	}
 	// because when transferred, is null. golang stuff...

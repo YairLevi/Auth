@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { useAuth } from "./lib/context";
+import { useAuth } from "auth-ts-sdk";
 
 export function Login() {
   const { login, loginWithProvider } = useAuth()

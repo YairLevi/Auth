@@ -39,7 +39,7 @@ func setupUsersRoutes(router *echo.Group) {
 
 func SetupEndpoints(server *echo.Echo) {
 	apiV1 := server.Group("/api")
-	setupBasicAuthEndpoints(apiV1.Group("/"))
+	setupBasicAuthEndpoints(apiV1)
 	setupGoogleAuthRoutes(apiV1.Group("/google"))
 	setupGithubAuthRoutes(apiV1.Group("/github"))
 	setupRolesRoutes(apiV1.Group("/roles"))

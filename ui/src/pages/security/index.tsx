@@ -120,7 +120,6 @@ function AllowedOrigins() {
   const [open, setOpen] = useState(false)
 
   const { securityConfig, addOrigin } = useSecurityConfig()
-
   function onClickAdd() {
     addOrigin(originRef.current.value)
     setOpen(false)
