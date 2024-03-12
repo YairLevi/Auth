@@ -8,6 +8,7 @@ which anyone could deploy and easily control. Plus, you could scale it however y
 for now, since the service is not secure enough, take the source code, build the service and run it on any machine.
 either view the endpoints, or if you're on react, download the "auth-ts-sdk" npm package and use it to integrate the auth service.
 
+client side SDK free for react users on npm, using `npm i auth-ts-sdk`
 
 ### TODO:
 - [ ] Create logging mechanism
