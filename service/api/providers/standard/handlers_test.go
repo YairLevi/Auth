@@ -29,7 +29,7 @@ func TestRegisterHandler(t *testing.T) {
 	jsonRequestBody, _ := json.Marshal(requestBody)
 
 	// Create a request
-	req := httptest.NewRequest(http.MethodPost, "/register", bytes.NewBuffer(jsonRequestBody))
+	req := httptest.NewRequest("", "/", bytes.NewBuffer(jsonRequestBody))
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
 	c := testServer.NewContext(req, rec)
@@ -64,7 +64,7 @@ func TestEmailPasswordLoginHandler_Correct(t *testing.T) {
 	}
 	jsonRequestBody, _ := json.Marshal(requestBody)
 
-	req := httptest.NewRequest(http.MethodPost, "/login", bytes.NewBuffer(jsonRequestBody))
+	req := httptest.NewRequest("", "/", bytes.NewBuffer(jsonRequestBody))
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
 	c := testServer.NewContext(req, rec)
@@ -94,7 +94,7 @@ func TestEmailPasswordLoginHandler_Wrong(t *testing.T) {
 	}
 	jsonRequestBody, _ := json.Marshal(requestBody)
 
-	req := httptest.NewRequest(http.MethodPost, "/login", bytes.NewBuffer(jsonRequestBody))
+	req := httptest.NewRequest("", "/", bytes.NewBuffer(jsonRequestBody))
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
 	c := testServer.NewContext(req, rec)
@@ -124,7 +124,7 @@ func TestCookieLoginHandler(t *testing.T) {
 		"password": "password123",
 	}
 	jsonRequestBody, _ := json.Marshal(requestBody)
-	req := httptest.NewRequest(http.MethodPost, "/login", bytes.NewBuffer(jsonRequestBody))
+	req := httptest.NewRequest("", "/", bytes.NewBuffer(jsonRequestBody))
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
 	c := testServer.NewContext(req, rec)
@@ -134,7 +134,7 @@ func TestCookieLoginHandler(t *testing.T) {
 	assert.NoError(t, err, "Failed to login")
 	jwt := rec.Result().Cookies()[0]
 
-	req = httptest.NewRequest(http.MethodGet, "/login", bytes.NewBuffer(jsonRequestBody))
+	req = httptest.NewRequest("", "/", bytes.NewBuffer(jsonRequestBody))
 	req.Header.Set("Content-Type", "application/json")
 	req.AddCookie(jwt)
 	rec = httptest.NewRecorder()

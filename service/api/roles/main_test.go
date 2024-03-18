@@ -1,4 +1,4 @@
-package standard
+package roles
 
 import (
 	"auth/service/database"
@@ -25,6 +25,10 @@ func TestMain(m *testing.M) {
 	testDb.Create(&types.SecurityConfig{})
 
 	db = testDb
+	db.Create(&types.User{
+		Email: "test@mail.com",
+	})
+
 	testServer = echo.New()
 
 	m.Run()
