@@ -34,8 +34,8 @@ func AddRole(ctx echo.Context) error {
 }
 
 func DeleteRole(ctx echo.Context) error {
-	roleName := ctx.Param("role")
-	if err := db.Unscoped().Where("name = ?", roleName).Delete(&types.Role{}).Error; err != nil {
+	roleID := ctx.Param("roleId")
+	if err := db.Unscoped().Where("id = ?", roleID).Delete(&types.Role{}).Error; err != nil {
 		fmt.Println(err)
 		return ctx.JSON(http.StatusInternalServerError, "error deleting")
 	}

@@ -17,13 +17,13 @@ func TestGetRoles(t *testing.T) {
 		{Name: "role1"},
 		{Name: "role2"},
 	}
-	for _, role := range roles {
-		db.Create(&role)
+	for i := range roles {
+		db.Create(&roles[i])
 	}
-
 	defer func() {
-		db.Where("Name = ?", "role1").Delete(&types.Role{})
-		db.Where("Name = ?", "role2").Delete(&types.Role{})
+		for i := range roles {
+			db.Unscoped().Where("id = ?", roles[i].ID).Delete(&types.Role{})
+		}
 	}()
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -42,14 +42,13 @@ func TestGetRoles(t *testing.T) {
 }
 
 func TestAddRole(t *testing.T) {
-	defer func() {
-		db.Where("Name = ?", "role").Delete(&types.Role{})
-	}()
-
-	role := types.Role{
+	originalRole := types.Role{
 		Name: "role",
 	}
-	jsonBody, _ := json.Marshal(role)
+	t.Cleanup(func() {
+		db.Unscoped().Where("name = ?", originalRole.Name).Delete(&types.Role{})
+	})
+	jsonBody, _ := json.Marshal(originalRole)
 
 	req := httptest.NewRequest(http.MethodPost, "/", bytes.NewBuffer(jsonBody))
 	req.Header.Set("Content-Type", "application/json")
@@ -58,11 +57,12 @@ func TestAddRole(t *testing.T) {
 	err := AddRole(c)
 	assert.NoError(t, err)
 
-	role = types.Role{}
-	db.First(&role)
+	role := types.Role{}
+	json.Unmarshal(rec.Body.Bytes(), &role)
+	db.Where("id = ?", role.ID).First(&role)
 
 	assert.Equal(t, http.StatusCreated, rec.Code)
-	assert.Equal(t, "role", role.Name)
+	assert.Equal(t, originalRole.Name, role.Name)
 }
 
 func TestDeleteRole(t *testing.T) {
@@ -75,9 +75,10 @@ func TestDeleteRole(t *testing.T) {
 		db.Unscoped().Where("id = ?", id).Delete(&types.Role{})
 	}()
 
-	jsonBody, _ := json.Marshal(role)
-	req := httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/%s", role.ID), bytes.NewBuffer(jsonBody))
-	req.Header.Set("Content-Type", "application/json")
+	req := httptest.NewRequest(http.MethodDelete, "/", nil)
+	values := req.URL.Query()
+	values.Add("roleId", role.ID)
+	req.URL.RawQuery = values.Encode()
 	rec := httptest.NewRecorder()
 	c := testServer.NewContext(req, rec)
 	err := DeleteRole(c)
@@ -91,7 +92,25 @@ func TestDeleteRole(t *testing.T) {
 }
 
 func TestGetUserRoles(t *testing.T) {
-	// TODO
+	user := types.User{}
+	db.First(&user)
+	role := types.Role{
+		Name: "role10",
+	}
+	assert.NoError(t, db.Create(&role).Error)
+	assert.NoError(t, db.Create(&types.UserRole{UserID: user.ID, RoleID: role.ID}).Error)
+	defer func() {
+		db.Where("name = ?", role.Name).Delete(&types.Role{})
+		db.Where("username = ?", user.Username).Delete(&types.User{})
+	}()
+
+	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/%s", user.ID), nil)
+	rec := httptest.NewRecorder()
+	c := testServer.NewContext(req, rec)
+	err := GetUserRoles(c)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, rec.Code)
+	assert.Equal(t, `["role10"]`+"\n", rec.Body.String())
 }
 
 func TestAddUserRoles(t *testing.T) {

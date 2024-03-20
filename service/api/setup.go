@@ -28,7 +28,7 @@ func setupGithubAuthRoutes(router *echo.Group) {
 func setupRolesRoutes(router *echo.Group) {
 	router.GET("/", roles.GetRoles)
 	router.POST("/", roles.AddRole)
-	router.DELETE("/:role", roles.DeleteRole)
+	router.DELETE("/:roleId", roles.DeleteRole)
 }
 
 func setupUsersRoutes(router *echo.Group) {

@@ -32,6 +32,7 @@ func TestMain(m *testing.M) {
 	testServer = echo.New()
 
 	m.Run()
+
 	d, _ := testDb.DB()
 	d.Close()
 }
