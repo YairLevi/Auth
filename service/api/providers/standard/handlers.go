@@ -26,7 +26,7 @@ func RegisterHandler(ctx echo.Context) error {
 	if err := db.Create(&user).Error; err != nil {
 		return ctx.JSON(http.StatusInternalServerError, err)
 	}
-	return ctx.JSON(http.StatusOK, &user)
+	return ctx.JSON(http.StatusCreated, &user)
 }
 
 func EmailPasswordLoginHandler(ctx echo.Context) error {
